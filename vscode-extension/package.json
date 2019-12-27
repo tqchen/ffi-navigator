@@ -1,0 +1,37 @@
+{
+	"name": "tvm-ffi-navigator",
+	"description": "TVM FFI Navigator",
+	"author": "tvm community",
+	"license": "Apache-2.0",
+	"version": "0.0.1",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/tqchen/tvm-ffi-navigator"
+	},
+	"publisher": "tqchen",
+	"categories": [],
+	"keywords": [],
+	"engines": {
+		"vscode": "^1.33.0"
+	},
+	"activationEvents": [
+		"onLanguage:plaintext"
+	],
+	"main": "./out/extension",
+	"contributes": {},
+	"scripts": {
+		"vscode:prepublish": "npm run update-vscode && npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w"
+	},
+	"devDependencies": {
+		"@types/mocha": "^5.2.7",
+		"@types/node": "^12.11.7",
+		"tslint": "^5.16.0",
+		"typescript": "^3.6.4",
+		"vscode": "^1.1.35"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^5.2.1"
+	}
+}
