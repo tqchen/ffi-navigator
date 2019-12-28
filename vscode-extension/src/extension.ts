@@ -17,7 +17,7 @@ let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
 	let pyCommand = 'python3'
- 	let args = ['-m', 'tvm_ffi_navigator.langserver']
+ 	let args = ['-m', 'ffi_navigator.langserver']
 	let commandOptions: ExecutableOptions = { stdio: 'pipe', detached: false };
 	let serverOptions: ServerOptions = {
 		run: { command: pyCommand, args: args, options: commandOptions },
@@ -33,8 +33,8 @@ export function activate(context: ExtensionContext) {
 		}
 	};
 	client = new LanguageClient(
- 		'TVMFFINavigator',
-		'TVM FFI Navigator',
+ 		'FFINavigator',
+		'FFI Navigator',
 		serverOptions,
 		clientOptions
 	);

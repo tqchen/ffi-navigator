@@ -1,6 +1,6 @@
-# VS Code Extension for TVM FFI Navigator
+# VS Code Extension for FFI Navigator
 
-VSCode extension for tvm ffi nagivator.
+VSCode extension for ffi nagivator.
 
 
 ## Install the Extension to VSCode
@@ -8,7 +8,7 @@ VSCode extension for tvm ffi nagivator.
 - Complete the python setup mentioned in the root's README
 - Run ```npm install && npm run compile```  on the vscode-extension folder
 - Copy the extension folder to your vscode extension folder
-  - ```cp -r /path/to/tvm-ffi-navigator/vscode-extension  ~/.vscode/extensions/tvm-ffi-navigator```
+  - ```cp -r /path/to/ffi-navigator/vscode-extension  ~/.vscode/extensions/ffi-navigator```
 - Reload the window
 
 
@@ -27,4 +27,4 @@ NOTE: You only need to reinstall the extension when the client side change.
 
 ## Debug information from python package
 
-- You can select output tab in the terminal bar, and select `TVM FFI Nagivator` to see logs from the python side
+- You can select output tab in the terminal bar, and select `FFI Nagivator` to see logs from the python side

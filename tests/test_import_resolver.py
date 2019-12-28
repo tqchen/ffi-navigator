@@ -1,4 +1,4 @@
-from tvm_ffi_navigator.import_resolver import PyImportResolver
+from ffi_navigator.import_resolver import PyImportResolver
 
 def test_import_resolver():
     doc_expr = """

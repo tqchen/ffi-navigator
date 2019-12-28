@@ -1,12 +1,14 @@
-# TVM FFI Navigator
+# FFI Navigator
 
-Toolkit that enhances IDEs to navigate ffi calls in the tvm project.
+FFI Navigator is a toolkit that enhances IDEs to navigate around project specific ffi calls.
+Currently it supports the PackedFunc FFI in the Apache TVM project.
 
-It contains a [language server](https://microsoft.github.io/language-server-protocol/) a vscode client.
+
+It is implemented as a [language server](https://microsoft.github.io/language-server-protocol/).
 
 ## Structure
 
-- python/tvm_ffi_navigator The analysis code and language server
+- python/ffi_navigator The analysis code and language server
 - vscode-extension language server extension for vscode
 
 ## Installation
@@ -15,9 +17,9 @@ Install dependencies
 ```bash
 pip install --user attrs python-jsonrpc-server``
 ```
-Then we need to ake sure tvm_ffi_navigator is in your python path in bashrc.
+Then we need to ake sure ffi_navigator is in your python path in bashrc.
 ```bash
-export PYTHONPATH=${PYTHONPATH}:/path/to/tvm-ffi-navigator/python
+export PYTHONPATH=${PYTHONPATH}:/path/to/ffi-navigator/python
 ```
 
 ### VSCode
@@ -32,9 +34,9 @@ Add the following configuration
 ```el
 (lsp-register-client
  (make-lsp-client
-  :new-connection (lsp-stdio-connection '("python3" "-m" "tvm_ffi_navigator.langserver"))
+  :new-connection (lsp-stdio-connection '("python3" "-m" "ffi_navigator.langserver"))
   :major-modes '(python-mode c++-mode)
-  :server-id 'tvm-ffi-navigator))
+  :server-id 'ffi-navigator))
 ```
 
 Set the project root to be ```/path/to/tvm``` using `M-x` `lsp-workspace-folders-add` `[RET]` `/path/to/tvm`

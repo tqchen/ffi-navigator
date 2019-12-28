@@ -1,5 +1,5 @@
 import textwrap
-from tvm_ffi_navigator import pattern, lsp
+from ffi_navigator import pattern, lsp
 
 def test_find_register_packed_cc():
     source = """

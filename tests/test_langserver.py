@@ -1,8 +1,8 @@
-from tvm_ffi_navigator import langserver
+from ffi_navigator import langserver
 
 import logging
 import os
-from tvm_ffi_navigator import workspace
+from ffi_navigator import workspace
 
 def run_check_langserver(tvm_path):
     server = langserver.BaseServer()
@@ -21,6 +21,6 @@ if __name__ == "__main__":
     # eyeballing test script
     logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
     curr_dir = os.path.dirname(os.path.realpath(os.path.expanduser(__file__)))
-    tvm_path = os.path.abspath(os.path.join(curr_dir, "..", "..", "..", "tvm"))
+    tvm_path = os.path.abspath(os.path.join(curr_dir, "..", "..", "tvm"))
     if os.path.exists(tvm_path):
         run_check_langserver(tvm_path)

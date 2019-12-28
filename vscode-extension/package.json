@@ -1,12 +1,12 @@
 {
-	"name": "tvm-ffi-navigator",
-	"description": "TVM FFI Navigator",
-	"author": "tvm community",
+	"name": "ffi-navigator",
+	"description": "FFI Navigator",
+	"author": "community contributors",
 	"license": "Apache-2.0",
 	"version": "0.0.1",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/tqchen/tvm-ffi-navigator"
+		"url": "https://github.com/tqchen/ffi-navigator"
 	},
 	"publisher": "tqchen",
 	"categories": [],
