@@ -37,6 +37,6 @@ Add the following configuration
   :server-id 'tvm-ffi-navigator))
 ```
 
-Set the project root to be ```/path/to/tvm``` using ```lsp-workspace-folders-add<RET>/path/to/tvm```
+Set the project root to be ```/path/to/tvm``` using `M-x` `lsp-workspace-folders-add` `[RET]` `/path/to/tvm`
 Try out the goto definition by opening a python file
-- Move cursor to python/tvm/api.py line 59 ```_api_internal._min_value```, type ```lsp-find-definition```
+- Move cursor to python/tvm/api.py line 59 `_api_internal._min_value`, type `M-x` `lsp-find-definition`
