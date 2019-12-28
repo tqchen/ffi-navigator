@@ -1,10 +1,16 @@
 # FFI Navigator
 
-FFI Navigator is a toolkit that enhances IDEs to navigate around project specific ffi calls.
-Currently it supports the PackedFunc FFI in the Apache TVM project.
+Most modern IDEs support find function definition within the same language(e.g. python or c++).
+However, it is very hard to do that for cross language FFI calls.
+While solving this general problem can be very techinically challenging,
+we can get around it by build a project specific analyzer that matches the
+FFI registeration code patterns and recovers the necessary information.
 
+This project is an example of that. Currently it supports the PackedFunc FFI in the Apache TVM project.
+It is implemented as a [language server](https://microsoft.github.io/language-server-protocol/)
+that provides getDefinition function for FFI calls and returns the location of the corresponding C++ API in the TVM project.
+It complements the other more powerful languages servers that support navigation within the same language.
 
-It is implemented as a [language server](https://microsoft.github.io/language-server-protocol/).
 
 ## Structure
 
