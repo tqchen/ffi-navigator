@@ -13,7 +13,7 @@ class PackedFuncDef:
     path : str = attr.ib()
     full_name : str = attr.ib()
     range: Range = attr.ib()
-
+    py_reg_func: Optional[str] = attr.ib(default=None)
 
 @attr.s
 class PyImport:
@@ -21,30 +21,6 @@ class PyImport:
     from_mod : Optional[str] = attr.ib()
     import_name : str = attr.ib()
     alias : Optional[str] = attr.ib()
-
-
-# Register packed function in c++
-RE_CC_REGISTER_PACKED = re.compile(r"\s*(TVM_REGISTER_GLOBAL|TVM_REGISTER_API)\(\"(?P<full_name>[^\"]+)\"\)")
-
-RE_PY_IMPORT = re.compile(r"\s*from\s+(?P<mod>[^\s]+)\s+import\s+(?P<name>[^\s]+)" +
-                          r"(\s+as\s+(?P<alias>[^\s]+))?")
-
-RE_PY_INIT_API = re.compile(r"_init_api\(\"(?P<api_name>[^\"]+)\"")
-
-RE_PY_NAMESPACE_PREFIX = re.compile(r"[a-zA-Z_][a-zA-Z0-9_.]+\Z")
-RE_PY_VAR_NAME = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]+")
-
-
-def find_pyimports(source):
-    source = source.split("\n") if isinstance(source, str) else source
-    results = []
-    for line, content in enumerate(source):
-        match = RE_PY_IMPORT.match(content)
-        if match:
-            results.append(PyImport(from_mod=match.group("mod"),
-                                    import_name=match.group("name"),
-                                    alias=match.group("alias")))
-    return results
 
 
 def find_register_packed_macro(path, source, macro_suffix, packed_prefix):
@@ -55,7 +31,7 @@ def find_register_packed_macro(path, source, macro_suffix, packed_prefix):
     for line, content in enumerate(source):
         match = rexpr.match(content)
         if match:
-            start, end = match.span("name")
+            start, end = match.span()
             start_pos = Position(line, start)
             end_pos = Position(line, end)
             decl = PackedFuncDef(
@@ -65,8 +41,10 @@ def find_register_packed_macro(path, source, macro_suffix, packed_prefix):
     return results
 
 
-def find_register_packed(path, source):
-    """Find packed function registry pattern."""
+RE_CC_REGISTER_PACKED = re.compile(r"\s*(TVM_REGISTER_GLOBAL|TVM_REGISTER_API)\(\"(?P<full_name>[^\"]+)\"\)")
+
+def find_cc_register_packed(path, source):
+    """Find C++ packed function registrations."""
     source = source.split("\n") if isinstance(source, str) else source
     results = []
     for line, content in enumerate(source):
@@ -86,7 +64,45 @@ def find_register_packed(path, source):
     return results
 
 
-def find_init_api(source):
+RE_PY_REGISTER_PACKED = re.compile(r"\s*@(?P<reg>([a-zA-Z_0-9]+.)*register_func)\(\"(?P<full_name>[^\"]+)\"\)")
+
+def find_py_register_packed(path, source):
+    """Discover python registration information."""
+    source = source.split("\n") if isinstance(source, str) else source
+    results = []
+    for line, content in enumerate(source):
+        match = RE_PY_REGISTER_PACKED.match(content)
+        if match:
+            start, end = match.span()
+            start_pos = Position(line, start)
+            end_pos = Position(line, end)
+            reg_func = match.group("reg")
+            decl = PackedFuncDef(
+                path=path, full_name=match.group("full_name"),
+                range=Range(start_pos, end_pos),
+                py_reg_func=reg_func)
+    return results
+
+
+RE_PY_IMPORT = re.compile(r"\s*from\s+(?P<mod>[^\s]+)\s+import\s+(?P<name>[^\s]+)" +
+                          r"(\s+as\s+(?P<alias>[^\s]+))?")
+
+def find_py_imports(source):
+    """Discover python import information."""
+    source = source.split("\n") if isinstance(source, str) else source
+    results = []
+    for line, content in enumerate(source):
+        match = RE_PY_IMPORT.match(content)
+        if match:
+            results.append(PyImport(from_mod=match.group("mod"),
+                                    import_name=match.group("name"),
+                                    alias=match.group("alias")))
+    return results
+
+
+RE_PY_INIT_API = re.compile(r"_init_api\(\"(?P<api_name>[^\"]+)\"")
+
+def find_py_init_api(source):
     """Find _init_api."""
     source = source.split("\n") if isinstance(source, str) else source
     results = []
@@ -95,6 +111,10 @@ def find_init_api(source):
         if match:
             results.append(match.group("api_name"))
     return results
+
+
+RE_PY_NAMESPACE_PREFIX = re.compile(r"[a-zA-Z_][a-zA-Z0-9_.]+\Z")
+RE_PY_VAR_NAME = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]+")
 
 def extract_expr(source, pos: Position):
     """Find the complete expression, include namespace prefix"""

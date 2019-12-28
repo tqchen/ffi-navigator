@@ -7,10 +7,15 @@ from .import_resolver import PyImportResolver
 class Workspace:
     """Analysis workspace"""
     def __init__(self, logger=None):
+        # states
         self.pyimport_resolver = PyImportResolver()
-        self.packed_func_defs = {}
+        self._packed_func_defs = {}
+        self._modpath2initapi = None
+        self._need_reload = False
+        # logger
         self.logger = logging if logger is None else logger
-        self._modpath2initapi = {}
+        # information
+        self._root_path = None
         self._pypath_root = None
         self._pypath_funcmod = None
         self._pypath_api_internal = None
@@ -18,9 +23,23 @@ class Workspace:
     def initialize(self, root_path):
         # By default only update root/src, root/python, root/include
         # can add configs later
-        self.update_dir(os.path.join(root_path, "src"))
-        self.update_dir(os.path.join(root_path, "include/tvm"))
-        self.update_dir(os.path.join(root_path, "python/tvm"))
+        self._root_path = root_path
+        self._reload_workspace()
+
+    def _reload(self):
+        """Reload workspace."""
+        self.pyimport_resolver() = PyImportResolver()
+        self._packed_func_defs = {}
+        self._modpath2initapi = {}
+        self.update_dir(os.path.join(self._root_path, "src"))
+        self.update_dir(os.path.join(self._root_path, "include/tvm"))
+        self.update_dir(os.path.join(self._root_path, "python/tvm"))
+        self._need_reload = False
+
+    def _sync_states(self):
+        """Synchronize the workspace states."""
+        if self._need_reload:
+            self._reload()
 
     def update_dir(self, dirname):
         logging.info("Workspace.update_dir %s start", dirname)
@@ -48,30 +67,66 @@ class Workspace:
             self._update_cc(path, source)
         logging.debug("Workspace.update_doc %s", path)
 
+    def _update_packed_def(self, packed_reg_list):
+        for item in packed_reg_list:
+            if item.full_name in self.packed_func_defs:
+                self._packed_func_defs[item.full_name].append(item)
+            else:
+                self._packed_func_defs[item.full_name] = [item]
+
     def _update_py(self, path, source):
-        self.pyimport_resolver.update_doc(path, source)
-        init_api = pattern.find_init_api(source)
         mod_path = path[:-3] if path.endswith(".py") else path
-        if init_api:
-            self._modpath2initapi[mod_path] = init_api
+        self.pyimport_resolver.update_doc(path, source)
+        # packed func registration
+        # need to validate the correctness.
+        def wrap_validation(reg):
+            def _deferred_value():
+                mod, name = self.pyimport_resolver.resolve(mod_path, reg.py_reg_func)
+                if mod == self._pypath_funcmod and name == "register_func":
+                    return reg
+                return None
+            return _deferred_value
+        self._update_packed_def(
+            wrap_validation(x) for x in pattern.find_py_register_packed(path, source))
+        # _init_api information
+        init_api_name = pattern.find_py_init_api(source)
+        if init_api_name:
+            # defer the validation until calling point.
+            def deferred_value():
+                mod, name = self.pyimport_resolver.resolve(mod_path, "_init_api")
+                return init_api_name if mod == self._pypath_funcmod else []
+            self._modpath2initapi[mod_path] = defered_value
 
     def _update_cc(self, path, source):
-        for item in pattern.find_register_packed(path, source):
+        for item in pattern.find_cc_register_packed(path, source):
             if item.full_name in self.packed_func_defs:
-                self.packed_func_defs[item.full_name].append(item)
+                self._packed_func_defs[item.full_name].append(item)
             else:
-                self.packed_func_defs[item.full_name] = [item]
+                self._packed_func_defs[item.full_name] = [item]
 
-    def _validate_init_api(self, mod_path):
-        mod, name = self.pyimport_resolver.resolve(mod_path, "_init_api")
-        return mod == self._pypath_funcmod
+    def get_packed_def(self, func_name):
+        """Get the packed function defintion for a given function name."""
+        self._sync_states()
+        if func_name in self._packed_func_defs:
+            lst = self._packed_func_defs[func_name]
+            # run validation and memoize
+            res = (x() if callable(x) else x for x in lst)
+            res = [x for x in res if x]
+            if len(lst) != res:
+                self._packed_func_defs[func_name] = res
+        return []
 
     def get_definition(self, mod_path, sym_name):
         """Get definition given mod path and symbol name"""
+        self._sync_states()
         mod_path, var_name = self.pyimport_resolver.resolve(mod_path, sym_name)
+
         if var_name is None:
             return []
-        prefix_lst = self._modpath2initapi.get(mod_path, [])
+
+        # always defer the evaluation.
+        prefix_lst = self._modpath2initapi.get(mod_path, [])()
+
         if mod_path == self._pypath_api_internal:
             prefix_lst = [""]
         elif self._validate_init_api(mod_path):

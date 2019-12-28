@@ -1,7 +1,8 @@
 import textwrap
 from ffi_navigator import pattern, lsp
 
-def test_find_register_packed_cc():
+
+def test_find_cc_register_packed():
     source = """
     TVM_REGISTER_GLOBAL("test.xyz")
     .set_body(TestXYZ)
@@ -13,7 +14,7 @@ def test_find_register_packed_cc():
      /
     REGISTER_MAKE(LetStmt)
     """
-    items = pattern.find_register_packed("xyz.cc", textwrap.dedent(source))
+    items = pattern.find_cc_register_packed("xyz.cc", textwrap.dedent(source))
     assert len(items) == 1
     assert items[0].full_name == "test.xyz"
     items = pattern.find_register_packed("api_ir.cc", " REGISTER_MAKE(LetStmt)")
@@ -24,7 +25,7 @@ def test_find_pyimports():
     from . import expr
     from . import make as _make
     """
-    items = pattern.find_pyimports(textwrap.dedent(source))
+    items = pattern.find_py_imports(textwrap.dedent(source))
     assert len(items) == 2
     assert items[0].from_mod == "."
     assert items[0].import_name == "expr"
@@ -50,7 +51,7 @@ def test_extract_expr():
     assert expr == "_make.Let"
 
 if __name__ == "__main__":
-    test_find_pyimports()
-    test_find_register_packed_cc()
-    test_find_init_api_py()
+    test_find_py_imports()
+    test_find_cc_register_packed()
+    test_find_py_init_api()
     test_extract_expr()

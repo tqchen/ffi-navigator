@@ -1,7 +1,7 @@
 """A resolver to resolve expression to the original definition point."""
 import os
 import logging
-from .pattern import find_pyimports
+from .pattern import find_py_imports
 
 def _num_leading_dots(path):
     for i, val in enumerate(path):
@@ -111,7 +111,7 @@ class PyImportResolver:
             path = path[:-3]
         imports = {}
 
-        for item in find_pyimports(source):
+        for item in find_py_imports(source):
             target_mod = self._resolve_mod_path(
                 os.path.dirname(path), item.from_mod)
             if target_mod is not None:
