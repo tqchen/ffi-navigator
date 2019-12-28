@@ -13,7 +13,7 @@ It contains a [language server](https://microsoft.github.io/language-server-prot
 
 Install dependencies
 ```bash
-pip install --user attrs python-jsonrpc-server``
+pip install --user attrs python-jsonrpc-server python-language-server``
 ```
 Then we need to ake sure tvm_ffi_navigator is in your python path in bashrc.
 ```bash
