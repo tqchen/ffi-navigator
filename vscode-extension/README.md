@@ -5,9 +5,7 @@ VSCode extension for tvm ffi nagivator.
 
 ## Install the Extension to VSCode
 
-- Install dependencies ```pip install --user attrs python-jsonrpc-server``
-- Make sure tvm_ffi_navigator is in your python path in bashrc
-  - ```export PYTHONPATH=${PYTHONPATH}:/path/to/tvm-ffi-navigator/python```
+- Complete the python setup mentioned in the root's README
 - Run ```npm install && npm run compile```  on the vscode-extension folder
 - Copy the extension folder to your vscode extension folder
   - ```cp -r /path/to/tvm-ffi-navigator/vscode-extension  ~/.vscode/extensions/tvm-ffi-navigator```
@@ -30,7 +28,3 @@ NOTE: You only need to reinstall the extension when the client side change.
 ## Debug information from python package
 
 - You can select output tab in the terminal bar, and select `TVM FFI Nagivator` to see logs from the python side
-
-
-
-
