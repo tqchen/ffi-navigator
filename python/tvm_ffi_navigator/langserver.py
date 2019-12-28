@@ -7,7 +7,8 @@ import os
 import sys
 from urllib.parse import urlparse
 from . import workspace, pattern, lsp
-from pyls_jsonrpc import dispatchers, endpoint, streams
+from pyls_jsonrpc import endpoint, streams
+from pyls import python_ls
 
 
 def uri2path(uri):
@@ -17,9 +18,10 @@ def path2uri(path):
     return pathlib.Path(os.path.abspath(path)).as_uri()
 
 
-class BaseServer(dispatchers.MethodDispatcher):
+class BaseServer(python_ls.PythonLanguageServer):
     """Base language server can be used for unittesting."""
     def __init__(self):
+        super(BaseServer, self).__init__(sys.stdin.buffer, sys.stdout.buffer)
         self.endpoint = None
         self.logger = logging
         self.ws = workspace.Workspace()
@@ -30,11 +32,7 @@ class BaseServer(dispatchers.MethodDispatcher):
         if rooturi is not None:
             root_path = uri2path(kwargs["rootUri"])
             self.ws.initialize(root_path)
-        return {
-            "capabilities": {
-                "definitionProvider": True,
-            }
-        }
+        return super(BaseServer, self).m_initialize(**kwargs)
 
     def m_initialized(self, **kwargs):
         pass
@@ -49,6 +47,8 @@ class BaseServer(dispatchers.MethodDispatcher):
             return []
         asloc = lambda decl: attr.asdict(lsp.Location(uri=path2uri(decl.path), range=decl.range))
         res = [asloc(x) for x in self.ws.get_definition(path, expr)]
+        if res == []:
+            res = super(BaseServer, self).m_text_document__definition(**kwargs)
         logging.info("textDocument/definition return %s", res)
         return res
 

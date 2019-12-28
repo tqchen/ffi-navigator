@@ -40,3 +40,9 @@ Add the following configuration
 Set the project root to be ```/path/to/tvm``` using `M-x` `lsp-workspace-folders-add` `[RET]` `/path/to/tvm`
 Try out the goto definition by opening a python file
 - Move cursor to python/tvm/api.py line 59 `_api_internal._min_value`, type `M-x` `lsp-find-definition`
+
+If you use eglot instead, add the following to your init.el file.
+```el
+(add-to-list 'eglot-server-programs
+	     `(python-mode . ("python3" "-m" "tvm_ffi_navigator.langserver")))
+```
