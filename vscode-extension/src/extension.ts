@@ -2,9 +2,8 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License.
  * ------------------------------------------------------------------------------------------ */
-
-import * as path from 'path';
-import { workspace, ExtensionContext } from 'vscode';
+import { ExtensionContext, window } from 'vscode';
+import { execSync } from 'child_process';
 
 import {
 	LanguageClient,
@@ -16,6 +15,14 @@ import {
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
+	console.log('FFI Navigator Start');
+	try {
+		execSync("pip3 show ffi_navigator");
+	} catch (error) {
+		window.showErrorMessage('ffi_navigator is not installed.' +
+								' Please run "pip3 install ffi_nagivator" and reload the window');
+		return ;
+	}
 	let pyCommand = 'python3'
  	let args = ['-m', 'ffi_navigator.langserver']
 	let commandOptions: ExecutableOptions = { stdio: 'pipe', detached: false };
