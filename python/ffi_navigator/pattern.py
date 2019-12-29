@@ -64,39 +64,65 @@ def find_cc_register_packed(path, source):
     return results
 
 
-RE_PY_REGISTER_PACKED = re.compile(r"\s*@(?P<reg>([a-zA-Z_0-9]+.)*register_func)\(\"(?P<full_name>[^\"]+)\"\)")
+RE_PY_REGISTER_PACKED0 = re.compile(r"@?(?P<reg>[a-zA-Z_]?[a-zA-Z_0-9.]*register_func)\(\"(?P<full_name>[^\"]+)\"")
+RE_PY_REGISTER_PACKED1 = re.compile(r"@(?P<reg>[a-zA-Z_]?[a-zA-Z_0-9.]*register_func)\s*\Z")
+RE_PY_REGISTER_PACKED1_DEF = re.compile(r"def\s+(?P<full_name>[a-zA-Z_0-9]+)\(")
 
 def find_py_register_packed(path, source):
     """Discover python registration information."""
     source = source.split("\n") if isinstance(source, str) else source
     results = []
     for line, content in enumerate(source):
-        match = RE_PY_REGISTER_PACKED.match(content)
-        if match:
-            start, end = match.span()
+        match0 = RE_PY_REGISTER_PACKED0.match(content)
+        if match0:
+            start, end = match0.span()
             start_pos = Position(line, start)
             end_pos = Position(line, end)
-            reg_func = match.group("reg")
+            reg_func = match0.group("reg")
             decl = PackedFuncDef(
-                path=path, full_name=match.group("full_name"),
+                path=path, full_name=match0.group("full_name"),
                 range=Range(start_pos, end_pos),
                 py_reg_func=reg_func)
+            results.append(decl)
+            continue
+
+        match1 = RE_PY_REGISTER_PACKED1.match(content)
+        if match1:
+            if line + 1 >= len(source):
+                continue
+            match_name = RE_PY_REGISTER_PACKED1_DEF.match(source[line + 1])
+            if not match_name:
+                continue
+            start, end = match1.span()
+            start_pos = Position(line, start)
+            end_pos = Position(line, end)
+            reg_func = match1.group("reg")
+            decl = PackedFuncDef(
+                path=path, full_name=match_name.group("full_name"),
+                range=Range(start_pos, end_pos),
+                py_reg_func=reg_func)
+            results.append(decl)
     return results
 
 
-RE_PY_IMPORT = re.compile(r"\s*from\s+(?P<mod>[^\s]+)\s+import\s+(?P<name>[^\s]+)" +
-                          r"(\s+as\s+(?P<alias>[^\s]+))?")
+RE_PY_IMPORT_PREFIX = re.compile(r"\s*from\s+(?P<mod>[^\s]+)\s+import")
+RE_PY_IMPORT_ITEM = re.compile(r"\s+(?P<name>[^\s]+)(\s+as\s+(?P<alias>[^\s]+))?")
+
 
 def find_py_imports(source):
     """Discover python import information."""
     source = source.split("\n") if isinstance(source, str) else source
     results = []
     for line, content in enumerate(source):
-        match = RE_PY_IMPORT.match(content)
-        if match:
-            results.append(PyImport(from_mod=match.group("mod"),
-                                    import_name=match.group("name"),
-                                    alias=match.group("alias")))
+        prefix = RE_PY_IMPORT_PREFIX.match(content)
+        if prefix:
+            from_mod = prefix.group("mod")
+            for item in content[prefix.end():].split(","):
+                match = RE_PY_IMPORT_ITEM.match(item)
+                if match:
+                    results.append(PyImport(from_mod=from_mod,
+                                            import_name=match.group("name"),
+                                            alias=match.group("alias")))
     return results
 
 
@@ -112,11 +138,23 @@ def find_py_init_api(source):
             results.append(match.group("api_name"))
     return results
 
+class Sym:
+    pass
+
+@attr.s
+class SymExpr(Sym):
+    value: str = attr.ib()
+
+@attr.s
+class SymGetPackedFunc(Sym):
+    value: str = attr.ib()
+
 
 RE_PY_NAMESPACE_PREFIX = re.compile(r"[a-zA-Z_][a-zA-Z0-9_.]+\Z")
-RE_PY_VAR_NAME = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]+")
+RE_PY_VAR_NAME = re.compile(r"[a-zA-Z0-9_.]+")
+RE_CC_GET_PACKED = re.compile(r"(GetPackedFunc|runtime::Registry::Get)\(\"\Z")
 
-def extract_expr(source, pos: Position):
+def extract_symbol(source, pos: Position):
     """Find the complete expression, include namespace prefix"""
     source = source.split("\n") if isinstance(source, str) else source
     content = source[pos.line]
@@ -124,4 +162,10 @@ def extract_expr(source, pos: Position):
     start = mprefix.start() if mprefix else pos.character
     mvar = RE_PY_VAR_NAME.match(content, pos.character)
     end = mvar.end() if mvar else pos.character
-    return content[start:end]
+    value = content[start:end]
+
+    if end < len(content) and content[end] == "\"":
+        if RE_CC_GET_PACKED.search(content, 0, start):
+            return SymGetPackedFunc(value)
+        return None
+    return SymExpr(value)

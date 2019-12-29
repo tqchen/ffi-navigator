@@ -16,6 +16,11 @@ def run_check_langserver(tvm_path):
         textDocument={"uri": stmt_uri},
         position={"line": 56, "character": 18 })
 
+    stmt_uri = langserver.path2uri(os.path.join(tvm_path, "src/relay/backend/compile_engine.cc"))
+    server.m_text_document__definition(
+        textDocument={"uri": stmt_uri},
+        position={"line": 727, "character": 59 })
+
 
 if __name__ == "__main__":
     # eyeballing test script

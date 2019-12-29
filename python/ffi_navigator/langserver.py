@@ -43,12 +43,17 @@ class BaseServer(dispatchers.MethodDispatcher):
         path = uri2path(kwargs["textDocument"]["uri"])
         logging.info("textDocument/definition %s", kwargs)
         pos = lsp.Position(**kwargs["position"])
-        expr = pattern.extract_expr(open(path).readlines(), pos)
-        if expr is None:
-            logging.error("textDocument/definition get None expression %s", kwargs)
-            return []
+        source = open(path).readlines()
+        sym = pattern.extract_symbol(source, pos)
         asloc = lambda decl: attr.asdict(lsp.Location(uri=path2uri(decl.path), range=decl.range))
-        res = [asloc(x) for x in self.ws.get_definition(path, expr)]
+
+        if isinstance(sym, pattern.SymExpr):
+            res = [asloc(x) for x in self.ws.get_definition(path, sym.value)]
+        elif isinstance(sym, pattern.SymGetPackedFunc):
+            res = [asloc(x) for x in self.ws.get_packed_def(sym.value)]
+        else:
+            logging.error("textDocument/definition cannot extract symbol, pos=%s, line=%s", pos, source[pos.line])
+            return []
         logging.info("textDocument/definition return %s", res)
         return res
 

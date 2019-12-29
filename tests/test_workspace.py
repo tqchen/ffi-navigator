@@ -7,16 +7,19 @@ def run_check_workspace(tvm_path):
     ws.initialize(tvm_path)
     def log_resolve(mod_path, var_name):
         logging.info("Resolve %s -> %s", (mod_path, var_name) , ws.pyimport_resolver.resolve(mod_path, var_name))
+
     log_resolve("tvm/relay/_expr", "_init_api")
     log_resolve("tvm/relay/expr", "_expr.Let")
     log_resolve("tvm/stmt", "_make")
 
-    def log_packed_decl(func_name):
-        logging.info("PackedDef %s -> %s", func_name, ws.packed_func_defs.get(func_name, None))
-    log_packed_decl("relay._transform.BackwardFoldScaleAxis")
-    logging.info("%s", ws.get_definition("tvm/relay/expr", "_make.Call"))
+    def log_packed_def(func_name):
+        logging.info("PackedDef %s -> %s", func_name, ws.get_packed_def(func_name))
+    log_packed_def("relay._transform.BackwardFoldScaleAxis")
+    log_packed_def("relay.backend.lower")
 
+    logging.info("%s", ws.get_definition("tvm/relay/expr", "_make.Call"))
     logging.info("%s", ws.get_definition("tvm/stmt", "_make.LetStmt"))
+
 
 if __name__ == "__main__":
     # eyeballing test script

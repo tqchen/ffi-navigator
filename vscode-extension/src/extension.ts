@@ -27,6 +27,8 @@ export function activate(context: ExtensionContext) {
 	let clientOptions: LanguageClientOptions = {
 		documentSelector: [
 			{ scheme: 'file', language: 'python' },
+			{ scheme: 'file', language: 'cpp' },
+			{ scheme: 'file', language: 'c' },
 			{ scheme: 'file', language: 'plaintext' },
 		],
 		synchronize: {
