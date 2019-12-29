@@ -32,6 +32,7 @@ Here are some examples you can try:
 - src/relay/backend/compile_engine.cc:L728 `runtime::Registry::Get("relay.backend.lower")`,
   move cursor to the name and run goto definition.
 - python/tvm/relay/expr.py:L191 move cursor to `Tuple` and run goto definition.
+You can also try out find references in all these cases
 
 ## Installation
 
