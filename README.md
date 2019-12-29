@@ -17,13 +17,30 @@ It complements the other more powerful languages servers that support navigation
 - python/ffi_navigator The analysis code and language server
 - vscode-extension language server extension for vscode
 
+## Features
+
+- Find definition/references of PackedFunc on the python and c++ side.
+- Find definition/references of Object/Node on the python and c++ side.
+  - move cursor to the object class name on the python side.
+  - move cursor to the type key string on the c++ side.
+
+These action works for a python symbol that refers a global PackedFunc(e.g. python/tvm/api.py:L59 `_api_internal._min_value`)
+and function name strings that occur in `TVM_REGISTER_GLOBAL`, `@register_func` and `GetPackedFunc`.
+Here are some examples you can try:
+
+- python/tvm/api.py:L59 move cursor to `_api_internal._min_value` and run goto definition.
+- src/relay/backend/compile_engine.cc:L728 `runtime::Registry::Get("relay.backend.lower")`,
+  move cursor to the name and run goto definition.
+- python/tvm/relay/expr.py:L191 move cursor to `Tuple` and run goto definition.
+
 ## Installation
 
-Install dependencies
+Install python package
 ```bash
-pip install --user attrs python-jsonrpc-server``
+pip install --user ffi-navigator
 ```
-Then we need to ake sure ffi_navigator is in your python path in bashrc.
+
+For developing the python package locally, we can just make sure ffi_navigator is in your python path in bashrc.
 ```bash
 export PYTHONPATH=${PYTHONPATH}:/path/to/ffi-navigator/python
 ```
@@ -48,6 +65,7 @@ Add the following configuration
 
 Set the project root to be ```/path/to/tvm``` using `M-x` `lsp-workspace-folders-add` `[RET]` `/path/to/tvm`
 Try out the goto definition by opening a python file
+
 - Move cursor to python/tvm/api.py line 59 `_api_internal._min_value`, type `M-x` `lsp-find-definition`
 
 if you use eglot instead, check out [this PR](https://github.com/tqchen/ffi-navigator/pull/1).

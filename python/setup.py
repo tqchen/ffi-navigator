@@ -5,7 +5,7 @@ long_description = open("../README.md").read()
 
 setup(
     name = "ffi-navigator",
-    version = "0.1",
+    version = "0.2",
     license="Apache-2.0",
     description = "Language server for navigating FFI calls",
     long_description=long_description,
@@ -19,7 +19,7 @@ setup(
         "python-jsonrpc-server",
         "attrs"
     ],
-    classifiers=[
+    classifiers = [
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Build Tools",
