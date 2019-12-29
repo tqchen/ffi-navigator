@@ -2,6 +2,7 @@
 import os
 import logging
 from .pattern import find_py_imports
+from typing import Dict, List, Tuple
 
 def _num_leading_dots(path):
     for i, val in enumerate(path):

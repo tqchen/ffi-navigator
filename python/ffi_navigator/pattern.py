@@ -15,6 +15,32 @@ class PackedFuncDef:
     range: Range = attr.ib()
     py_reg_func: Optional[str] = attr.ib(default=None)
 
+
+@attr.s
+class PackedFuncRef:
+    """Packed function reference"""
+    path : str = attr.ib()
+    full_name : str = attr.ib()
+    range: Range = attr.ib()
+
+
+@attr.s
+class ObjectDef:
+    """Packed function reference"""
+    path : str = attr.ib()
+    full_name : str = attr.ib()
+    range: Range = attr.ib()
+
+
+@attr.s
+class ObjectReg:
+    """Packed function reference"""
+    path : str = attr.ib()
+    full_name : str = attr.ib()
+    range: Range = attr.ib()
+    py_reg_func: Optional[str] = attr.ib(default=None)
+
+
 @attr.s
 class PyImport:
     """Python import"""
@@ -64,44 +90,107 @@ def find_cc_register_packed(path, source):
     return results
 
 
-RE_PY_REGISTER_PACKED0 = re.compile(r"@?(?P<reg>[a-zA-Z_]?[a-zA-Z_0-9.]*register_func)\(\"(?P<full_name>[^\"]+)\"")
-RE_PY_REGISTER_PACKED1 = re.compile(r"@(?P<reg>[a-zA-Z_]?[a-zA-Z_0-9.]*register_func)\s*\Z")
-RE_PY_REGISTER_PACKED1_DEF = re.compile(r"def\s+(?P<full_name>[a-zA-Z_0-9]+)\(")
+RE_CC_GET_PACKED = re.compile(r"(GetPackedFunc|runtime::Registry::Get)\(\"(?P<full_name>[^\"]+)\"\)")
+
+def find_cc_get_packed(path, source):
+    """Find C++ packed function registrations."""
+    source = source.split("\n") if isinstance(source, str) else source
+    results = []
+    for line, content in enumerate(source):
+        start_pos = 0
+        while True:
+            match = RE_CC_GET_PACKED.search(content, start_pos)
+            if not match:
+                break
+            start, end = match.span("full_name")
+            start_pos = Position(line, start)
+            end_pos = Position(line, end)
+            decl = PackedFuncRef(
+                path=path, full_name=match.group("full_name"),
+                range=Range(start_pos, end_pos))
+            results.append(decl)
+            start_pos = end
+    return results
+
+RE_CC_DECL_OBJECT = re.compile(r"const\s+char\s*\*\s+_type_key\s*=\s*\"(?P<full_name>[^\"]+)\"")
+
+def find_cc_decl_object(path, source):
+    """Find C++ packed function registrations."""
+    source = source.split("\n") if isinstance(source, str) else source
+    results = []
+    for line, content in enumerate(source):
+        match = RE_CC_DECL_OBJECT.search(content)
+        if match:
+            start, end = match.span()
+            start_pos = Position(line, start)
+            end_pos = Position(line, end)
+            decl = ObjectDef(
+                path=path,
+                full_name=match.group("full_name"),
+                range=Range(start_pos, end_pos))
+            results.append(decl)
+    return results
+
+
+RE_PY_REGISTER_PACKED = re.compile(
+    r"@?(?P<reg>([a-zA-Z_]?[a-zA-Z_0-9.]*.)?register_func)" +
+    r"((\(\"(?P<full_name>[^\"]+)\")|(\s*\Z))")
+RE_PY_FUNC_DEF = re.compile(r"def\s+(?P<full_name>[a-zA-Z_0-9]+)\(")
 
 def find_py_register_packed(path, source):
     """Discover python registration information."""
     source = source.split("\n") if isinstance(source, str) else source
     results = []
     for line, content in enumerate(source):
-        match0 = RE_PY_REGISTER_PACKED0.match(content)
-        if match0:
-            start, end = match0.span()
+        match = RE_PY_REGISTER_PACKED.match(content)
+        if match:
+            start, end = match.span()
             start_pos = Position(line, start)
             end_pos = Position(line, end)
-            reg_func = match0.group("reg")
-            decl = PackedFuncDef(
-                path=path, full_name=match0.group("full_name"),
-                range=Range(start_pos, end_pos),
-                py_reg_func=reg_func)
-            results.append(decl)
-            continue
+            reg_func = match.group("reg")
+            full_name = match.group("full_name")
+            if not full_name and line + 1 < len(source):
+                match_name = RE_PY_FUNC_DEF.match(source[line + 1])
+                if match_name:
+                    full_name = match_name.group("full_name")
+            if full_name:
+                decl = PackedFuncDef(
+                    path=path, full_name=full_name,
+                    range=Range(start_pos, end_pos),
+                    py_reg_func=reg_func)
+                results.append(decl)
+    return results
 
-        match1 = RE_PY_REGISTER_PACKED1.match(content)
-        if match1:
-            if line + 1 >= len(source):
-                continue
-            match_name = RE_PY_REGISTER_PACKED1_DEF.match(source[line + 1])
-            if not match_name:
-                continue
-            start, end = match1.span()
+
+RE_PY_REGISTER_OBJECT = re.compile(
+    r"@(?P<reg>([a-zA-Z_]?[a-zA-Z_0-9.]*.)?(register_object|register_node|register_relay_node))" +
+    r"(\(\"(?P<full_name>[^\"]+)?\"\))?")
+RE_PY_CLASS_DEF = re.compile(r"class\s+(?P<full_name>[a-zA-Z_0-9]+)\(")
+
+def find_py_register_object(path, source):
+    """Discover python registration information."""
+    source = source.split("\n") if isinstance(source, str) else source
+    results = []
+    for line, content in enumerate(source):
+        match = RE_PY_REGISTER_OBJECT.match(content)
+        if match:
+            start, end = match.span()
             start_pos = Position(line, start)
             end_pos = Position(line, end)
-            reg_func = match1.group("reg")
-            decl = PackedFuncDef(
-                path=path, full_name=match_name.group("full_name"),
-                range=Range(start_pos, end_pos),
-                py_reg_func=reg_func)
-            results.append(decl)
+            reg_func = match.group("reg")
+            full_name = match.group("full_name")
+            if not full_name and line + 1 < len(source):
+                match_name = RE_PY_CLASS_DEF.match(source[line + 1])
+                if match_name:
+                    full_name = match_name.group("full_name")
+            if full_name:
+                if match.group("reg").endswith("register_relay_node"):
+                    full_name = "relay." + full_name
+                decl = ObjectReg(
+                    path=path, full_name=full_name,
+                    range=Range(start_pos, end_pos),
+                    py_reg_func=reg_func)
+                results.append(decl)
     return results
 
 
@@ -149,10 +238,27 @@ class SymExpr(Sym):
 class SymGetPackedFunc(Sym):
     value: str = attr.ib()
 
+@attr.s
+class SymRegPackedFunc(Sym):
+    value: str = attr.ib()
+
+@attr.s
+class SymRegObject(Sym):
+    value: str = attr.ib()
+
+@attr.s
+class SymDeclObject(Sym):
+    value: str = attr.ib()
+
 
 RE_PY_NAMESPACE_PREFIX = re.compile(r"[a-zA-Z_][a-zA-Z0-9_.]+\Z")
 RE_PY_VAR_NAME = re.compile(r"[a-zA-Z0-9_.]+")
-RE_CC_GET_PACKED = re.compile(r"(GetPackedFunc|runtime::Registry::Get)\(\"\Z")
+RE_CC_GET_PACKED_PREFIX = re.compile(r"(GetPackedFunc|runtime::Registry::Get)\(\"\Z")
+RE_CC_REG_PACKED_PREFIX = re.compile(r"\s*(TVM_REGISTER_GLOBAL|TVM_REGISTER_API)\(\"\Z")
+RE_PY_REG_PACKED_PREFIX = re.compile(r"@(?P<reg>[a-zA-Z_]?[a-zA-Z_0-9.]*register_func)\(\"\Z")
+RE_CC_DECL_TYPE_KEY_PREFIX = re.compile(r"char\s*\*\s*_type_key\s*=\s*\"\Z")
+RE_PY_CLASS_PREFIX = re.compile(r"\s*class\s+\Z")
+
 
 def extract_symbol(source, pos: Position):
     """Find the complete expression, include namespace prefix"""
@@ -164,8 +270,45 @@ def extract_symbol(source, pos: Position):
     end = mvar.end() if mvar else pos.character
     value = content[start:end]
 
+    if RE_PY_CLASS_PREFIX.match(content, 0, start) and pos.line != 0:
+        match = RE_PY_REGISTER_OBJECT.match(source[pos.line - 1])
+        if match:
+            full_name = match.group("full_name")
+            full_name = value if full_name is None else full_name
+            if match.group("reg").endswith("register_relay_node"):
+                full_name = "relay." + full_name
+            return SymRegObject(value=full_name)
+
     if end < len(content) and content[end] == "\"":
-        if RE_CC_GET_PACKED.search(content, 0, start):
+        if RE_CC_GET_PACKED_PREFIX.search(content, 0, start):
             return SymGetPackedFunc(value)
+        if RE_CC_REG_PACKED_PREFIX.search(content, 0, start):
+            return SymRegPackedFunc(value=value)
+        if RE_PY_REG_PACKED_PREFIX.search(content, 0, start):
+            return SymRegPackedFunc(value=value)
+        if RE_CC_DECL_TYPE_KEY_PREFIX.search(content, 0, start):
+            return SymDeclObject(value=value)
         return None
+
     return SymExpr(value)
+
+
+RE_PY_DELIM = r"(\s|[.,\(\)\[\]{}:=\+\-\*]|\Z)+"
+
+def search_symbol(source,  symbols):
+    """Find the complete expression, include namespace prefix"""
+    source = source.split("\n") if isinstance(source, str) else source
+    rexpr = RE_PY_DELIM + "(?P<name>("
+    rexpr += "|".join([re.escape(sym) for sym in symbols]) + "))"
+    rexpr += RE_PY_DELIM
+    rexpr = re.compile(rexpr)
+    results = []
+
+    for line, content in enumerate(source):
+        match = rexpr.search(content)
+        if match:
+            start, end = match.span("name")
+            start_pos = Position(line, start)
+            end_pos = Position(line, end)
+            results.append(Range(start_pos, end_pos))
+    return results

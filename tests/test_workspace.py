@@ -17,8 +17,19 @@ def run_check_workspace(tvm_path):
     log_packed_def("relay._transform.BackwardFoldScaleAxis")
     log_packed_def("relay.backend.lower")
 
-    logging.info("%s", ws.get_definition("tvm/relay/expr", "_make.Call"))
-    logging.info("%s", ws.get_definition("tvm/stmt", "_make.LetStmt"))
+    def log_find_def(mod, name):
+        logging.info("FindDef %s:%s -> %s", mod, name, ws.find_definition(mod, name))
+
+    log_find_def("tvm/relay/expr", "_make.Call")
+    log_find_def("tvm/stmt", "_make.LetStmt")
+
+
+    def log_find_refs(func_name):
+        logging.info("PackedRef %s -> %s", func_name, ws.find_packed_refs(func_name))
+
+    log_find_refs("make.LetStmt")
+    log_find_refs("relay.backend.lower")
+
 
 
 if __name__ == "__main__":

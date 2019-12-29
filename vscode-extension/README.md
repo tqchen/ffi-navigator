@@ -5,6 +5,12 @@ VSCode extension for ffi nagivator.
 
 ## Install the Extension to VSCode
 
+### VSCode MarketPlace
+
+You can get the extension by searching `FFI Navigator` in the VSCode marketplace.
+
+### Build from Source
+
 - Complete the python setup mentioned in the root's README
 - Run ```npm install && npm run compile```  on the vscode-extension folder
 - Copy the extension folder to your vscode extension folder
