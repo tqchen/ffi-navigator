@@ -44,6 +44,11 @@ For developing the python package locally, we can just make sure ffi_navigator i
 ```bash
 export PYTHONPATH=${PYTHONPATH}:/path/to/ffi-navigator/python
 ```
+You can also directly install fft_navigator to system Python packages so that you don't need to setup PYTHONPATH.
+Note that if you choose to install the package, you have to re-install it everytime you update the package.
+```bash
+python setup.py install
+```
 
 ### VSCode
 
