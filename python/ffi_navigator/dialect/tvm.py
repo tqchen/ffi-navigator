@@ -3,6 +3,7 @@ import os
 from .. import pattern
 
 class TVMProvider:
+    """Provider for TVM FFI."""
     def __init__(self, resolver, logger):
         self.resolver = resolver
         self.cc_def_packed = pattern.macro_matcher(
@@ -88,6 +89,7 @@ class TVMProvider:
         return results
 
     def init_pass(self, path, source):
+        """This function will be called for each file before extract."""
         if path.endswith("python/tvm/__init__.py"):
             self._pypath_root = os.path.abspath(path[:-len("/__init__.py")])
             self._pypath_init = os.path.abspath(path[:-len(".py")])
@@ -97,6 +99,10 @@ class TVMProvider:
             self.logger.info("TVM: find python path %s", self._pypath_root)
 
     def extract(self, path, source, begin=0, end=None):
+        """This function will be called for each file
+
+        Extract patterns in the file as specified in pattern.py and return them.
+        """
         if path.endswith(".cc") or path.endswith(".h"):
             return self._cc_extract(path, source, begin, end)
         elif path.endswith(".py"):
@@ -104,9 +110,11 @@ class TVMProvider:
         return []
 
     def extract_symbol(self, path, source, pos):
+        """Extract possible pattern in the specified location, if not found, return None."""
         # only search a small context
         begin = max(pos.line - 1, 0)
         end = min(pos.line + 2, len(source))
+        # We can use extract and verify to get the pattern.
         for res in self.extract(path, source, begin, end):
             if (isinstance(res, (pattern.Ref, pattern.Def)) and
                 res.range.start.line <= pos.line and
