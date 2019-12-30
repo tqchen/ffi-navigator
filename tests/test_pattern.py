@@ -1,8 +1,7 @@
 import textwrap
 from ffi_navigator import pattern, lsp
 
-
-def test_find_cc_register_packed():
+def test_cc_find_packed():
     source = """
     TVM_REGISTER_GLOBAL("test.xyz")
     .set_body(TestXYZ)
@@ -17,17 +16,22 @@ def test_find_cc_register_packed():
     void Test() {
       auto f = GetPackedFunc("test.xyz1")
     }
-
     """
-    items = pattern.find_cc_register_packed("xyz.cc", textwrap.dedent(source))
-    assert len(items) == 1
-    assert items[0].full_name == "test.xyz"
-    items = pattern.find_cc_register_packed("api_ir.cc", " REGISTER_MAKE(LetStmt)")
-    assert len(items) == 1
 
-    items = pattern.find_cc_get_packed("xyz.cc", textwrap.dedent(source))
+    finder = pattern.macro_matcher(
+        ["TVM_REGISTER_GLOBAL", "TVM_REGISTER_API"],
+        lambda skey, path, rg, _: pattern.Def(skey, path, rg))
+    items = finder("xyz.cc", textwrap.dedent(source))
     assert len(items) == 1
-    assert items[0].full_name == "test.xyz1"
+    assert isinstance(items[0], pattern.Def)
+    assert items[0].key == "test.xyz"
+
+    finder = pattern.func_get_searcher(
+        ["GetPackedFunc"],
+        lambda skey, path, rg, _: pattern.Ref(skey, path, rg))
+    items = finder("xyz.cc", textwrap.dedent(source))
+    assert len(items) == 1
+    assert items[0].key == "test.xyz1"
 
 
 def test_find_cc_decl_object():
@@ -37,9 +41,13 @@ def test_find_cc_decl_object():
       static constexpr const char* _type_key = "relay.GlobalVar"
     };
     """
-    items = pattern.find_cc_decl_object("xyz.cc", textwrap.dedent(source))
+    finder = pattern.re_matcher(
+        r"\s*static\s+constexpr\sconst\s+char\s*\*\s+_type_key\s*=\s*\"(?P<key>[^\"]+)\"",
+        lambda match, path, rg:
+        pattern.Def(key="t:"+match.group("key"), path=path, range=rg))
+    items = finder("xyz.cc", textwrap.dedent(source))
     assert len(items) == 1
-    assert items[0].full_name == "relay.GlobalVar"
+    assert items[0].key == "t:relay.GlobalVar"
 
 
 def test_find_py_register_packed():
@@ -54,13 +62,14 @@ def test_find_py_register_packed():
 
     _reg.register_func("test", myfunc)
     """
-    items = pattern.find_py_register_packed("xyz.cc", textwrap.dedent(source))
+    finder = pattern.decorator_matcher(
+        ["register_func"], "def",
+        lambda key, path, rg, _: pattern.Def(key=key, path=path, range=rg))
+    items = finder("xyz.cc", textwrap.dedent(source))
     assert len(items) == 3
-    assert items[0].py_reg_func == "register_func"
-    assert items[0].full_name == "test_xyz"
-    assert items[1].py_reg_func == "_reg.register_func"
-    assert items[1].full_name == "test.abc"
-    assert items[2].full_name == "test"
+    assert items[0].key == "test_xyz"
+    assert items[1].key == "test.abc"
+    assert items[2].key == "test"
 
 
 def test_find_py_register_object():
@@ -73,12 +82,16 @@ def test_find_py_register_object():
     class ABC(ObjectBase):
         pass
     """
-    items = pattern.find_py_register_object("xyz.py", textwrap.dedent(source))
+    finder = pattern.decorator_matcher(
+        ["register_object", "register_relay_node"], "class",
+        lambda key, path, rg, reg:
+        pattern.Def(key="t:relay."+key, path=path, range=rg)
+        if reg.endswith("relay_node")
+        else pattern.Def(key="t:"+key, path=path, range=rg))
+    items = finder("xyz.cc", textwrap.dedent(source))
     assert len(items) == 2
-    assert items[0].py_reg_func == "register_relay_node"
-    assert items[0].full_name == "relay.GlobalVar"
-    assert items[1].py_reg_func == "_reg.register_object"
-    assert items[1].full_name == "test.ABC"
+    assert items[0].key == "t:relay.GlobalVar"
+    assert items[1].key == "t:test.ABC"
 
 
 def test_find_py_imports():
@@ -97,49 +110,6 @@ def test_find_py_imports():
     assert items[2].from_mod == "."
     assert items[2].import_name == "data"
     assert items[2].alias == None
-
-def test_find_py_init_api():
-    source = """
-    _init_api("relay.expr")
-    """
-    items = pattern.find_py_init_api(textwrap.dedent(source))
-    assert items[0] == "relay.expr"
-
-
-def test_extract_symbol():
-    source = """
-    self.f(_make.Let)
-
-    @register_relay_node
-    class GlobalVar(Node)
-    """
-    pos = lsp.Position(line=1, character=13)
-    expr = pattern.extract_symbol(textwrap.dedent(source), pos)
-    assert isinstance(expr, pattern.SymExpr)
-    assert expr.value == "_make.Let"
-
-    pos = lsp.Position(line=4, character=10)
-    expr = pattern.extract_symbol(textwrap.dedent(source), pos)
-    assert isinstance(expr, pattern.SymRegObject)
-    assert expr.value == "relay.GlobalVar"
-
-    source = """
-    auto* pf = GetPackedFunc("test.data")
-
-    class GlobalVarNode {
-     public:
-      static constexpr const char* _type_key = "relay.GlobalVar"
-    };
-    """
-    pos = lsp.Position(line=1, character=35)
-    expr = pattern.extract_symbol(textwrap.dedent(source), pos)
-    assert isinstance(expr, pattern.SymGetPackedFunc)
-    assert expr.value == "test.data"
-
-    pos = lsp.Position(line=5, character=48)
-    expr = pattern.extract_symbol(textwrap.dedent(source), pos)
-    assert isinstance(expr, pattern.SymDeclObject)
-    assert expr.value == "relay.GlobalVar"
 
 
 def test_search_symbol():
@@ -163,10 +133,8 @@ def test_search_symbol():
 
 if __name__ == "__main__":
     test_find_py_imports()
-    test_find_py_register_packed()
-    test_find_cc_register_packed()
+    test_cc_find_packed()
     test_find_cc_decl_object()
+    test_find_py_register_packed()
     test_find_py_register_object()
-    test_find_py_init_api()
-    test_extract_symbol()
     test_search_symbol()
