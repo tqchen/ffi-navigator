@@ -34,6 +34,12 @@ Here are some examples you can try:
 - python/tvm/relay/expr.py:L191 move cursor to `Tuple` and run goto definition.
 You can also try out find references in all these cases
 
+## Add Support to a New FFI Pattern
+
+The project is modularized into [dialect namespace](python/ffi_navigator/dialect) which is
+FFI convention(or even project) specific and generic parts.
+You will be able to extend the support by adding a new dialect.
+
 ## Installation
 
 Install python package
