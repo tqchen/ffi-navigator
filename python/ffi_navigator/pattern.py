@@ -178,45 +178,6 @@ def func_get_searcher(func_names, fcreate=None):
     return _matcher
 
 
-def func_get_matcher(func_names, fcreate=None):
-    """Search pattern <func_name>("<skey>")
-
-    Parameters
-    ----------
-    func_names : list
-        List of macro names to match.
-
-    fcreate : Function (skey, path, range, func_name) -> result.
-    """
-    rexpr = r"(?P<func_name>("
-    rexpr += "|".join(re.escape(x)  for x in func_names)
-    rexpr += r"))\(\"(?P<skey>[^\"]+)\"\)"
-    rexpr = re.compile(rexpr)
-
-    def _matcher(path, source, begin_line=0, end_line=None):
-        source = source.split("\n") if isinstance(source, str) else source
-        results = []
-        end_line = min(end_line, len(source)) if end_line else len(source)
-        for line in range(begin_line, end_line):
-            content = source[line]
-            str_pos = 0
-            while True:
-                match = rexpr.search(content, str_pos)
-                if not match:
-                    break
-                start, end = match.span("skey")
-                start_pos = Position(line, start)
-                end_pos = Position(line, end)
-                item = fcreate(match.group("skey"), path,
-                               Range(start_pos, end_pos),
-                               match.group("func_name"))
-                if item:
-                    results.append(item)
-                str_pos = match.end()
-        return results
-    return _matcher
-
-
 def decorator_matcher(func_names, keyword, fcreate=None):
     """Search pattern @[namespace]<func_name>("<skey>")
 
