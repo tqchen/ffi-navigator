@@ -26,12 +26,6 @@ Here are some examples you can try:
 - python/tvm/relay/expr.py:L191 move cursor to `Tuple` and run goto definition.
 You can also try out find references in all these cases
 
-## Add Support to a New FFI Pattern
-
-The project is modularized into [dialect namespace](python/ffi_navigator/dialect) which is
-FFI convention(or even project) specific and generic parts.
-You will be able to extend the support by adding a new dialect.
-
 ## Installation
 
 Install python package
@@ -74,3 +68,9 @@ Try out the goto definition by opening a python file
 
 if you use eglot instead, check out [this PR](https://github.com/tqchen/ffi-navigator/pull/1).
 eglot does not support multiple servers per language at the moment, the PR above contains a workaround.
+
+## Adding Support for New FFI Patterns
+
+The project is modularized into [dialect namespace](python/ffi_navigator/dialect) which is
+FFI convention(or even project) specific and generic parts.
+You will be able to extend the support by adding a new dialect.
