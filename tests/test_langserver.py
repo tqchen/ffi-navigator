@@ -9,10 +9,20 @@ def run_check_langserver(tvm_path):
     uri = langserver.path2uri(tvm_path)
     server.m_initialize(rootUri=uri)
 
-    uri = langserver.path2uri(os.path.join(tvm_path, "python/tvm/relay/expr.py"))
+    uri = langserver.path2uri(os.path.join(tvm_path, "python/tvm/api.py"))
     server.m_text_document__references(
         textDocument={"uri": uri},
-        position={"line": 177, "character": 12 })
+        position={"line": 58, "character": 33 })
+
+    uri = langserver.path2uri(os.path.join(tvm_path, "python/tvm/relay/expr.py"))
+    server.m_text_document__definition(
+        textDocument={"uri": uri},
+        position={"line": 177, "character": 14 })
+
+    uri = langserver.path2uri(os.path.join(tvm_path, "src/relay/ir/expr.cc"))
+    server.m_text_document__references(
+        textDocument={"uri": uri},
+        position={"line": 39, "character": 33 })
 
     uri = langserver.path2uri(os.path.join(tvm_path, "python/tvm/stmt.py"))
     ret1 = server.m_text_document__definition(
@@ -36,6 +46,8 @@ def run_check_langserver(tvm_path):
     server.m_text_document__references(
         textDocument={"uri": uri},
         position={"line": 727, "character": 59 })
+
+
 
 
 if __name__ == "__main__":

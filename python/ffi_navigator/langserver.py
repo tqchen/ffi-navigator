@@ -16,9 +16,17 @@ def uri2path(uri):
 def path2uri(path):
     return pathlib.Path(os.path.abspath(path)).as_uri()
 
-def def2loc(packed_def_list):
-    proc = lambda decl: attr.asdict(lsp.Location(uri=path2uri(decl.path), range=decl.range))
-    return [proc(x) for x in packed_def_list]
+def pattern2loc(pattern_list):
+    results = []
+    dupset = set()
+    proc = lambda decl: lsp.Location(uri=path2uri(decl.path), range=decl.range)
+    for x in pattern_list:
+        x = proc(x)
+        key = attr.astuple(x)
+        if key not in dupset:
+            dupset.add(key)
+            results.append(attr.asdict(x))
+    return results
 
 
 class BaseServer(dispatchers.MethodDispatcher):
@@ -49,18 +57,18 @@ class BaseServer(dispatchers.MethodDispatcher):
         logging.info("textDocument/definition %s", kwargs)
         pos = lsp.Position(**kwargs["position"])
         source = open(path).readlines()
-        sym = pattern.extract_symbol(source, pos)
+        sym = self.ws.extract_symbol(path, source, pos)
 
-        if isinstance(sym, pattern.SymExpr):
-            res = self.ws.find_definition(path, sym.value)
-        elif isinstance(sym, pattern.SymGetPackedFunc):
-            res = self.ws.get_packed_def(sym.value)
-        elif isinstance(sym, pattern.SymRegObject):
-            res = self.ws._object_defs.get(sym.value, [])
-        else:
+        if sym is None:
             logging.error("textDocument/definition cannot extract symbol, pos=%s, line=%s", pos, source[pos.line])
             return []
-        res = def2loc(res)
+        if isinstance(sym, pattern.Symbol):
+            res = self.ws.find_defs(path, sym.value)
+        elif isinstance(sym, pattern.Ref):
+            res = self.ws.key2defs.get(sym.key, [])
+        else:
+            return None
+        res = pattern2loc(res)
         logging.info("textDocument/definition return %s", res)
         return res
 
@@ -70,29 +78,27 @@ class BaseServer(dispatchers.MethodDispatcher):
         pos = lsp.Position(**kwargs["position"])
         include_decl = kwargs.get("includeDeclaration", True)
         source = open(path).readlines()
-        sym = pattern.extract_symbol(source, pos)
-        defs, refs = [], []
+        sym = self.ws.extract_symbol(path, source, pos)
 
-        if isinstance(sym, pattern.SymExpr):
-            defs = self.ws.find_definition(path, sym.value)
+        defs, refs = [], []
+        if isinstance(sym, pattern.Symbol):
+            defs = self.ws.find_defs(path, sym.value)
             if defs:
-                refs = self.ws.find_packed_refs(defs[0].full_name)
-        elif isinstance(sym, pattern.SymGetPackedFunc):
+                refs = self.ws.find_refs(defs[0].key)
+        elif isinstance(sym, pattern.Ref):
+            print(sym)
             if include_decl:
-                defs = self.ws.get_packed_def(sym.value)
-            refs = self.ws.find_packed_refs(sym.value)
-        elif isinstance(sym, pattern.SymRegPackedFunc):
+                defs = self.ws.key2defs.get(sym.key, [])
+                print(defs)
+            refs = self.ws.find_refs(sym.key)
+        elif isinstance(sym, pattern.Def):
             if include_decl:
-                defs = self.ws.get_packed_def(sym.value)
-            refs = self.ws.find_packed_refs(sym.value)
-        elif isinstance(sym, (pattern.SymRegObject, pattern.SymDeclObject)):
-            if include_decl:
-                defs = self.ws._object_defs.get(sym.value, [])
-            refs = self.ws._object_regs.get(sym.value, [])
+                defs = [sym]
+            refs = self.ws.find_refs(sym.key)
         else:
             logging.error("textDocument/references cannot extract symbol, pos=%s, line=%s", pos, source[pos.line])
             return []
-        res = (def2loc(defs) if include_decl else []) + def2loc(refs)
+        res = (pattern2loc(defs) if include_decl else []) + pattern2loc(refs)
         logging.info("textDocument/references return %s", res)
         return res
 
