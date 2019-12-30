@@ -5,7 +5,7 @@ long_description = open("../README.md").read()
 
 setup(
     name = "ffi-navigator",
-    version = "0.3.1",
+    version = "0.3.2",
     license="Apache-2.0",
     description = "Language server for navigating FFI calls",
     long_description=long_description,

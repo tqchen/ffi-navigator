@@ -33,6 +33,7 @@ class BaseServer(dispatchers.MethodDispatcher):
     """Base language server can be used for unittesting."""
     def __init__(self):
         self.endpoint = None
+        self.logger = logging
         self.ws = workspace.Workspace()
 
     def m_initialize(self, **kwargs):
