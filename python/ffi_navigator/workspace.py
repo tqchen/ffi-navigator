@@ -55,7 +55,7 @@ class Workspace:
             provider.init_pass(path, source)
 
     def update_dir(self, dirname):
-        logging.info("Workspace.update_dir %s start", dirname)
+        self.logger.info("Workspace.update_dir %s start", dirname)
         # intialize pass
         for path in sorted(glob.glob(os.path.join(dirname, "**/*.py"), recursive=True)):
             self.init_pass(os.path.abspath(path), open(path).readlines())
@@ -66,7 +66,7 @@ class Workspace:
             self.update_doc(os.path.abspath(path), open(path).readlines())
         for path in sorted(glob.glob(os.path.join(dirname, "**/*.cc"), recursive=True)):
             self.update_doc(os.path.abspath(path), open(path).readlines())
-        logging.info("Workspace.update_dir %s finish", dirname)
+        self.logger.info("Workspace.update_dir %s finish", dirname)
 
     def update_doc(self, path, source):
         for provider in self._providers:
@@ -93,7 +93,6 @@ class Workspace:
 
         for item in export_list:
             key = item.fvar2key(var_name)
-            print(var_name, key)
             if key in self.key2defs:
                 return self.key2defs[key]
         return []

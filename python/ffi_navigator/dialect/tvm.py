@@ -3,7 +3,15 @@ import os
 from .. import pattern
 
 class TVMProvider:
-    """Provider for TVM FFI."""
+    """Provider for TVM FFI.
+
+    Parameters
+    ----------
+    resolver : PyImportResolver
+        Resolver for orginial definition.
+
+    logger : Logger object
+    """
     def __init__(self, resolver, logger):
         self.resolver = resolver
         self.cc_def_packed = pattern.macro_matcher(
@@ -95,7 +103,7 @@ class TVMProvider:
             self._pypath_init = os.path.abspath(path[:-len(".py")])
             self._pypath_funcmod = os.path.join(self._pypath_root, "_ffi", "function")
             self._pypath_api_internal = os.path.join(self._pypath_root, "_api_internal")
-            self.resolver._pkg2modpath["tvm"] = self._pypath_root
+            self.resolver.add_package("tvm", self._pypath_root)
             self.logger.info("TVM: find python path %s", self._pypath_root)
 
     def extract(self, path, source, begin=0, end=None):

@@ -19,6 +19,21 @@ class PyImportResolver:
         self._pkg2modpath = {}
         self._recurr_depth = 0
 
+    def add_package(self, package, mod_path):
+        """Add root path of a package to the resolver.
+
+        This will enable absolute import of the package
+
+        Parameters
+        ----------
+        package : str
+            The name of the package
+
+        mod_path : str
+            The path to the package
+        """
+        self._pkg2modpath[package] = mod_path
+
     def resolve(self, mod_path, attr_name):
         """Try to resolve an attribute expression to its original definition point.
 

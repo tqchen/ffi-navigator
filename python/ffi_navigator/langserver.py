@@ -33,7 +33,6 @@ class BaseServer(dispatchers.MethodDispatcher):
     """Base language server can be used for unittesting."""
     def __init__(self):
         self.endpoint = None
-        self.logger = logging
         self.ws = workspace.Workspace()
 
     def m_initialize(self, **kwargs):
@@ -54,13 +53,13 @@ class BaseServer(dispatchers.MethodDispatcher):
 
     def m_text_document__definition(self, **kwargs):
         path = uri2path(kwargs["textDocument"]["uri"])
-        logging.info("textDocument/definition %s", kwargs)
+        self.logger.info("textDocument/definition %s", kwargs)
         pos = lsp.Position(**kwargs["position"])
         source = open(path).readlines()
         sym = self.ws.extract_symbol(path, source, pos)
 
         if sym is None:
-            logging.error("textDocument/definition cannot extract symbol, pos=%s, line=%s", pos, source[pos.line])
+            self.logger.error("textDocument/definition cannot extract symbol, pos=%s, line=%s", pos, source[pos.line])
             return []
         if isinstance(sym, pattern.Symbol):
             res = self.ws.find_defs(path, sym.value)
@@ -69,12 +68,12 @@ class BaseServer(dispatchers.MethodDispatcher):
         else:
             return None
         res = pattern2loc(res)
-        logging.info("textDocument/definition return %s", res)
+        self.logger.info("textDocument/definition return %s", res)
         return res
 
     def m_text_document__references(self, **kwargs):
         path = uri2path(kwargs["textDocument"]["uri"])
-        logging.info("textDocument/references %s", kwargs)
+        self.logger.info("textDocument/references %s", kwargs)
         pos = lsp.Position(**kwargs["position"])
         include_decl = kwargs.get("includeDeclaration", True)
         source = open(path).readlines()
@@ -86,20 +85,18 @@ class BaseServer(dispatchers.MethodDispatcher):
             if defs:
                 refs = self.ws.find_refs(defs[0].key)
         elif isinstance(sym, pattern.Ref):
-            print(sym)
             if include_decl:
                 defs = self.ws.key2defs.get(sym.key, [])
-                print(defs)
             refs = self.ws.find_refs(sym.key)
         elif isinstance(sym, pattern.Def):
             if include_decl:
                 defs = [sym]
             refs = self.ws.find_refs(sym.key)
         else:
-            logging.error("textDocument/references cannot extract symbol, pos=%s, line=%s", pos, source[pos.line])
+            self.logger.error("textDocument/references cannot extract symbol, pos=%s, line=%s", pos, source[pos.line])
             return []
         res = (pattern2loc(defs) if include_decl else []) + pattern2loc(refs)
-        logging.info("textDocument/references return %s", res)
+        self.logger.info("textDocument/references return %s", res)
         return res
 
 
