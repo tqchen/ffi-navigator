@@ -4,33 +4,23 @@ from .tvm import TVMProvider
 from .mxnet import MXNetProvider
 
 
-class NoOpProvider:
-    """A provider for projects without a registered dialect.
+def autodetect_dialects(root_path, resolver, logger):
+    """Auto-detects which providers to use based on the root path.
+
+    Parameters
+    ----------
+    resolver : PyImportResolver
+        Resolver for orginial definition.
+
+    logger : Logger object
+
+    Returns
+    -------
+    dialects: list of provider
     """
-    def __init__(self, resolver, logger):
-        self.resolver = resolver
-        self.logger = logger
-
-    def _cc_extract(self, path, source, begin, end):
-        return []
-
-    def _py_extract(self, path, source, begin, end):
-        return []
-
-    def init_pass(self, path, source):
-        pass
-
-    def extract(self, path, source, begin=0, end=None):
-        return []
-
-    def extract_symbol(self, path, source, pos):
-        return None
-
-
-def create_dialect(root_path, resolver, logger):
+    dialects = []
     if os.path.exists(os.path.join(root_path, "python", "tvm")):
-        return TVMProvider(resolver, logger)
+        dialects.append(TVMProvider(resolver, logger))
     elif os.path.exists(os.path.join(root_path, "python", "mxnet")):
-        return MXNetProvider(resolver, logger)
-    else:
-        return NoOpProvider(resolver, logger)
+        dialects.append(MXNetProvider(resolver, logger))
+    return dialects
