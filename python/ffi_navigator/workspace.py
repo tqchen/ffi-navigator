@@ -3,7 +3,7 @@ import os
 import logging
 from . import pattern
 from .import_resolver import PyImportResolver
-from .dialect.tvm import TVMProvider
+from .dialect import autodetect_dialects
 
 def _append_dict(sdict, key, value):
     if key in sdict:
@@ -21,7 +21,6 @@ class Workspace:
         self.key2defs = {}
         self.key2refs = {}
         self.modpath2exports = {}
-        self._providers = [TVMProvider(self.pyimport_resolver, self.logger)]
         self._need_reload = False
         # information
         self._root_path = None
@@ -29,6 +28,8 @@ class Workspace:
     def initialize(self, root_path):
         # By default only update root/src, root/python, root/include
         # can add configs later
+        self.logger.info("root_path: %s", root_path)
+        self._providers = autodetect_dialects(root_path, self.pyimport_resolver, self.logger)
         self._root_path = root_path
         self._reload()
 
