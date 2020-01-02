@@ -9,6 +9,10 @@ def autodetect_dialects(root_path, resolver, logger):
 
     Parameters
     ----------
+    root_path: str
+        The root path for the project provided by a user or detected by
+        a LSP client
+
     resolver : PyImportResolver
         Resolver for orginial definition.
 
