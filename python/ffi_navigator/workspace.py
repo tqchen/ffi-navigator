@@ -3,7 +3,7 @@ import os
 import logging
 from . import pattern
 from .import_resolver import PyImportResolver
-from .dialect import TVMProvider, MXNetProvider
+from .dialect import create_dialect
 
 def _append_dict(sdict, key, value):
     if key in sdict:
@@ -21,7 +21,6 @@ class Workspace:
         self.key2defs = {}
         self.key2refs = {}
         self.modpath2exports = {}
-        self._providers = [TVMProvider(self.pyimport_resolver, self.logger)]
         self._need_reload = False
         # information
         self._root_path = None
@@ -29,6 +28,8 @@ class Workspace:
     def initialize(self, root_path):
         # By default only update root/src, root/python, root/include
         # can add configs later
+        self.logger.info("root_path: %s\n", root_path)
+        self._provider = create_dialect(root_path, self.pyimport_resolver, self.logger)
         self._root_path = root_path
         self._reload()
 
@@ -51,8 +52,7 @@ class Workspace:
         """Initialization pass"""
         mod_path = path[:-3] if path.endswith(".py") else path
         self.pyimport_resolver.update_doc(path, source)
-        for provider in self._providers:
-            provider.init_pass(path, source)
+        self._provider.init_pass(path, source)
 
     def update_dir(self, dirname):
         self.logger.info("Workspace.update_dir %s start", dirname)
@@ -69,17 +69,16 @@ class Workspace:
         self.logger.info("Workspace.update_dir %s finish", dirname)
 
     def update_doc(self, path, source):
-        for provider in self._providers:
-            for pt in provider.extract(path, source):
-                mod_path = path[:-3] if path.endswith(".py") else path
-                if isinstance(pt, pattern.Def):
-                    _append_dict(self.key2defs, pt.key, pt)
-                elif isinstance(pt, pattern.Ref):
-                    _append_dict(self.key2refs, pt.key, pt)
-                elif isinstance(pt, pattern.Export):
-                    _append_dict(self.modpath2exports, mod_path, pt)
-                else:
-                    self.logger.warn("Ignore pattern %s, path=%s", pt, path)
+        for pt in self._provider.extract(path, source):
+            mod_path = path[:-3] if path.endswith(".py") else path
+            if isinstance(pt, pattern.Def):
+                _append_dict(self.key2defs, pt.key, pt)
+            elif isinstance(pt, pattern.Ref):
+                _append_dict(self.key2refs, pt.key, pt)
+            elif isinstance(pt, pattern.Export):
+                _append_dict(self.modpath2exports, mod_path, pt)
+            else:
+                self.logger.warn("Ignore pattern %s, path=%s", pt, path)
         self.logger.debug("Workspace.update_doc %s", path)
 
     def find_defs(self, mod_path, sym_name):
@@ -140,8 +139,7 @@ class Workspace:
         return res
 
     def extract_symbol(self, path, source, pos):
-        for pt in self._providers:
-            res = pt.extract_symbol(path, source, pos)
-            if res:
-                return res
+        res = self._provider.extract_symbol(path, source, pos)
+        if res:
+            return res
         return pattern.extract_symbol(source, pos)
