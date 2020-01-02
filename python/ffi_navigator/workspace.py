@@ -3,7 +3,7 @@ import os
 import logging
 from . import pattern
 from .import_resolver import PyImportResolver
-from .dialect.tvm import TVMProvider
+from .dialect import TVMProvider, MXNetProvider
 
 def _append_dict(sdict, key, value):
     if key in sdict:
