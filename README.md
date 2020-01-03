@@ -49,6 +49,8 @@ python setup.py install
 See [vscode-extension](vscode-extension)
 
 ### Emacs
+#### Goto definition from Python to C++
+![goto-def-py-cpp](./gifs/emacs/tvm_find_def_py_cpp.gif)
 
 Install [lsp-mode](https://github.com/emacs-lsp/lsp-mode)
 
