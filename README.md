@@ -51,6 +51,12 @@ See [vscode-extension](vscode-extension)
 ### Emacs
 #### Goto definition from Python to C++
 ![goto-def-py-cpp](./gifs/emacs/tvm_find_def_py_cpp.gif)
+#### Goto definition from C++ to Python
+![goto-def-py-cpp](./gifs/emacs/tvm_find_def_cpp_py.gif)
+#### Find reference across Python and C++
+![goto-def-py-cpp](./gifs/emacs/tvm_find_reference.gif)
+#### Goto definition in PyTorch
+![goto-def-py-cpp](./gifs/emacs/torch.gif)
 
 Install [lsp-mode](https://github.com/emacs-lsp/lsp-mode)
 
