@@ -7,9 +7,8 @@ from .. import pattern
 from ..lsp import Range, Position
 
 
-def _re_match_multi_line(path, lines):
+def _re_match_multi_line(pat, path, lines):
     source = "\n".join(lines)
-    pat = r"\.def\((?P<key_space>\s*)\"(?P<key_func>[a-z0-9|_]+)\""
     matches = list(re.finditer(pat, source))
     if matches == []:
         return []
@@ -28,7 +27,7 @@ def _re_match_multi_line(path, lines):
         pos_start = match.start() - int(cumsum[line_num_start-1])
         pos_end = match.end() - int(cumsum[line_num_end-1])
         rg = Range(Position(line_num_start, pos_start), Position(line_num_end, pos_end))
-        key = match.group("key_func")
+        key = match.group("key")
         result.append(pattern.Def(key=key, path=path, range=rg))
 
     return result
@@ -75,8 +74,14 @@ class TorchProvider:
         # .def(
         #     "_jit_pass_insert_prepack_unpack",
         #     [](script::Module& module) { return InsertPrepackUnpack(module); })
-        self.cpp_pybind_func = lambda path, lines: _re_match_multi_line(path, lines)
-
+        self.cpp_pybind_func = lambda path, lines: \
+          _re_match_multi_line(r"\.def\((?P<key_space>\s*)\"(?P<key>[a-z0-9|_]+)\"", path, lines)
+        # A pattern for pybind-wrapped classes
+        # py::class_<Method>(m, "ScriptMethod", py::dynamic_attr())
+        # py::class_<CompilationUnit, std::shared_ptr<CompilationUnit>>(
+        #     m, "CompilationUnit")
+        self.cpp_pybind_class = lambda path, lines: \
+          _re_match_multi_line("py::class_\<[A-Za-z0-9|_|::|<|>]+(\,\s*[A-Za-z0-9|_|::|<|>]+)*\>\s*\((?P<key_space>\s*)m,\s*\"(?P<key>[A-Za-z0-9|_]+)\"(,\s*[A-Za-z0-9|_|::|<|>|(|)]+)*\)", path, lines)
         # torch.ops.quantized.conv2d_relu (c10 ops)
         self.py_ops = pattern.re_matcher(
             r"ops\.(?P<key_namespace>[a-z0-9|_|]+)\.(?P<key_op>[a-z0-9|_|]+)",
@@ -86,16 +91,18 @@ class TorchProvider:
             use_search=True)
         # torch.conv1d, torch._C._nn.avg_pool2d (variable methods)
         # torch._C._jit_script_class_compile (for jit etc)
-        self.py_variable_methods = pattern.re_matcher(
-            r"torch\.([A-Za-z0-9|_]+\.)*(?P<key_op>[a-z0-9|_|]+)",
+        # torch._C.ScriptMethod, torch._C.CompilationUnit
+        self.py_wrapped = pattern.re_matcher(
+            r"torch\.([A-Za-z0-9|_]+\.)*(?P<key>[A-Za-z0-9|_|]+)",
             lambda match, path, rg:
-            pattern.Ref(key=match.group("key_op"),
+            pattern.Ref(key=match.group("key"),
                         path=path, range=rg),
             use_search=True)
 
     def _cc_extract(self, path, source, begin, end):
         results = self.c10_reg(path, source, begin, end)
         results += self.cpp_pybind_func(path, source)
+        results += self.cpp_pybind_class(path, source)
         generated_cpp = [
              os.path.join("generated", "python_nn_functions.cpp"),
              os.path.join("generated", "python_torch_functions.cpp"),
@@ -109,7 +116,7 @@ class TorchProvider:
     def _py_extract(self, path, source, begin, end):
         results = []
         results += self.py_ops(path, source, begin, end)
-        results += self.py_variable_methods(path, source, begin, end)
+        results += self.py_wrapped(path, source, begin, end)
         return results
 
     def init_pass(self, path, source):
