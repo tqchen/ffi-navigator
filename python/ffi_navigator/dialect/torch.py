@@ -7,8 +7,9 @@ from .. import pattern
 from ..lsp import Range, Position
 
 
-def _re_match_multi_line(pat, prefix, path, lines):
+def _re_match_multi_line(path, lines):
     source = "\n".join(lines)
+    pat = r"\.def\((?P<key_space>\s*)\"(?P<key_func>[a-z0-9|_]+)\""
     matches = list(re.finditer(pat, source))
     if matches == []:
         return []
@@ -27,7 +28,7 @@ def _re_match_multi_line(pat, prefix, path, lines):
         pos_start = match.start() - int(cumsum[line_num_start-1])
         pos_end = match.end() - int(cumsum[line_num_end-1])
         rg = Range(Position(line_num_start, pos_start), Position(line_num_end, pos_end))
-        key = prefix + match.group("key_func")
+        key = match.group("key_func")
         result.append(pattern.Def(key=key, path=path, range=rg))
 
     return result
@@ -47,34 +48,48 @@ class TorchProvider:
         self.resolver = resolver
         self._pypath_root = None
         self.logger = logger
+        # A pattern for c10 regesterd operators
+        # c10::RegisterOperators()
+        #   .op("quantized::conv2d",
+        #       c10::RegisterOperators::options().kernel<QConvInt8<2, false>>(
+        #       TensorTypeId::QuantizedCPUTensorId))
         self.c10_reg = pattern.re_matcher(
             r"\.op\(\s*\"(?P<key>[a-z0-9|_|::]+)(.*)\"",
             lambda match, path, rg:
             pattern.Def(key=match.group("key"), path=path, range=rg),
             use_search=True)
+        # A pattern for generated methods under torch/csrc/autograd/generated
+        # You need to have built PyTorch from source for this pattern to work
+        # {"conv1d", (PyCFunction)(void(*)(void))THPVariable_conv1d, ...
+        # {"conv2d", (PyCFunction)(void(*)(void))THPVariable_conv2d, ...
+        # {"conv3d", (PyCFunction)(void(*)(void))THPVariable_conv3d, ...
         self.cpp_generated = pattern.re_matcher(
             r"{\"(?P<key>[a-z0-9|_|::]+)\"",
             lambda match, path, rg:
             pattern.Def(key=match.group("key"), path=path, range=rg),
             use_search=True)
-        self.cpp_pybind_func = lambda path, lines: \
-          _re_match_multi_line(r"\.def\((?P<key_space>\s*)\"(?P<key_func>[a-z0-9|_]+)\"", "", path, lines)
+        # A pattern for pybind-wrapped functions
+        # .def(
+        #     "_jit_pass_insert_prepack_unpack",
+        #     [](std::shared_ptr<Graph>& g) { return InsertPrepackUnpack(g); })
+        # .def(
+        #     "_jit_pass_insert_prepack_unpack",
+        #     [](script::Module& module) { return InsertPrepackUnpack(module); })
+        self.cpp_pybind_func = lambda path, lines: _re_match_multi_line(path, lines)
+
+        # torch.ops.quantized.conv2d_relu (c10 ops)
         self.py_ops = pattern.re_matcher(
             r"ops\.(?P<key_namespace>[a-z0-9|_|]+)\.(?P<key_op>[a-z0-9|_|]+)",
             lambda match, path, rg:
             pattern.Ref(key=match.group("key_namespace") + "::" + match.group("key_op"),
                         path=path, range=rg),
             use_search=True)
+        # torch.conv1d, torch._C._nn.avg_pool2d (variable methods)
+        # torch._C._jit_script_class_compile (for jit etc)
         self.py_variable_methods = pattern.re_matcher(
             r"torch\.([A-Za-z0-9|_]+\.)*(?P<key_op>[a-z0-9|_|]+)",
             lambda match, path, rg:
             pattern.Ref(key=match.group("key_op"),
-                        path=path, range=rg),
-            use_search=True)
-        self.py_pybind_func = pattern.re_matcher(
-            r"torch\._C\.(?P<key_func>[a-z0-9|_]+)",
-            lambda match, path, rg:
-            pattern.Ref(key=match.group("key_func"),
                         path=path, range=rg),
             use_search=True)
 
@@ -95,8 +110,6 @@ class TorchProvider:
         results = []
         results += self.py_ops(path, source, begin, end)
         results += self.py_variable_methods(path, source, begin, end)
-        results += self.py_pybind_func(path, source, begin, end)
-
         return results
 
     def init_pass(self, path, source):
