@@ -12,7 +12,8 @@ def _re_match_multi_line(pat, path, lines):
     matches = list(re.finditer(pat, source))
     if matches == []:
         return []
-    cumsum = np.cumsum(list(map(lambda line: len(line)+1, lines))) # +1 for newline
+    line_counts = list(map(lambda line: len(line)+1, lines)) # +1 for newline
+    cumsum = np.cumsum(line_counts)
 
     next_begin = 0
     result = []
@@ -132,8 +133,9 @@ class TorchProvider:
         Extract patterns in the file as specified in pattern.py and return them.
         """
         if path.endswith(".cpp") and not path.endswith("_test.cpp"):
-            self.logger.info("Extracting from %s", path)
             return self._cc_extract(path, source, begin, end)
+        if path.endswith(".py"):
+            return self._py_extract(path, source, begin, end)
         return []
 
     def extract_symbol(self, path, source, pos):
@@ -142,14 +144,13 @@ class TorchProvider:
         begin = max(pos.line - 1, 0)
         end = min(pos.line + 2, len(source))
         # We can use extract and verify to get the pattern.
-        if path.endswith(".py"):
-            for res in self._py_extract(path, source, begin, end):
-                if (isinstance(res, (pattern.Ref, pattern.Def)) and
-                    res.range.start.line <= pos.line and
-                    res.range.end.line >= pos.line and
-                    res.range.start.character <= pos.character and
-                    res.range.end.character >= pos.character):
-                    return res
+        for res in self.extract(path, source, begin, end):
+            if (isinstance(res, (pattern.Ref, pattern.Def)) and
+                res.range.start.line <= pos.line and
+                res.range.end.line >= pos.line and
+                res.range.start.character <= pos.character and
+                res.range.end.character >= pos.character):
+                return res
         return None
 
     def get_additional_scan_dirs(self, root_path):
