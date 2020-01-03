@@ -3,6 +3,7 @@ import os
 from .tvm import TVMProvider
 from .dgl import DGLProvider
 from .mxnet import MXNetProvider
+from .torch import TorchProvider
 
 
 def autodetect_dialects(root_path, resolver, logger):
@@ -28,6 +29,8 @@ def autodetect_dialects(root_path, resolver, logger):
         dialects.append(TVMProvider(resolver, logger))
     elif os.path.exists(os.path.join(root_path, "python", "mxnet")):
         dialects.append(MXNetProvider(resolver, logger))
+    elif os.path.exists(os.path.join(root_path, "torch")):
+        dialects.append(TorchProvider(resolver, logger))
     elif os.path.exists(os.path.join(root_path, "python", "dgl")):
         dialects.append(DGLProvider(resolver, logger))
     return dialects

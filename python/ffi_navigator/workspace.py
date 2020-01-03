@@ -38,9 +38,15 @@ class Workspace:
         self.key2defs = {}
         self.key2refs = {}
         self.modpath2exports = {}
-        self.update_dir(os.path.join(self._root_path, "src"))
-        self.update_dir(os.path.join(self._root_path, "include"))
-        self.update_dir(os.path.join(self._root_path, "python"))
+        scan_dirs = [
+            os.path.join(self._root_path, "src"),
+            os.path.join(self._root_path, "include"),
+            os.path.join(self._root_path, "python")
+        ]
+        for provider in self._providers:
+            scan_dirs += provider.get_additional_scan_dirs(self._root_path)
+        for dirname in scan_dirs:
+            self.update_dir(dirname)
         self._need_reload = False
 
     def _sync_states(self):
@@ -66,6 +72,8 @@ class Workspace:
         for path in sorted(glob.glob(os.path.join(dirname, "**/*.h"), recursive=True)):
             self.update_doc(os.path.abspath(path), open(path).readlines())
         for path in sorted(glob.glob(os.path.join(dirname, "**/*.cc"), recursive=True)):
+            self.update_doc(os.path.abspath(path), open(path).readlines())
+        for path in sorted(glob.glob(os.path.join(dirname, "**/*.cpp"), recursive=True)):
             self.update_doc(os.path.abspath(path), open(path).readlines())
         self.logger.info("Workspace.update_dir %s finish", dirname)
 
