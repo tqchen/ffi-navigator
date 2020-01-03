@@ -2,7 +2,8 @@
 
 Most modern IDEs support find function definition within the same language(e.g. python or c++). However, it is very hard to do that for cross-language FFI calls. While solving this general problem can be very technically challenging, we can get around it by building a project-specific analyzer that matches the FFI registration code patterns and recovers the necessary information.
 
-This project is an example of that. Currently, it supports the PackedFunc FFI in the Apache TVM project. It is implemented as a [language server](https://microsoft.github.io/language-server-protocol/) that provides getDefinition function for FFI calls and returns the location of the corresponding C++ API in the TVM project. It complements the IDE tools that support navigation within the same language.
+This project is an example of that. Currently, it supports the PackedFunc FFI in the Apache TVM project. It is implemented as a [language server](https://microsoft.github.io/language-server-protocol/) that provides getDefinition function for FFI calls and returns the location of the corresponding C++ API in the TVM project. It complements the IDE tools that support navigation within the same language. We also have preliminary support for MXNet and PyTorch, so we can do goto-definition from Python to C++ in these projects too.
+
 
 ## Structure
 

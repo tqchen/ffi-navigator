@@ -63,7 +63,7 @@ class TorchProvider:
         # {"conv2d", (PyCFunction)(void(*)(void))THPVariable_conv2d, ...
         # {"conv3d", (PyCFunction)(void(*)(void))THPVariable_conv3d, ...
         self.cpp_generated = pattern.re_matcher(
-            r"{\"(?P<key>[a-z0-9|_|::]+)\"",
+            r"{\"(?P<key>[a-z0-9|_]+)\"",
             lambda match, path, rg:
             pattern.Def(key=match.group("key"), path=path, range=rg),
             use_search=True)
@@ -71,9 +71,6 @@ class TorchProvider:
         # .def(
         #     "_jit_pass_insert_prepack_unpack",
         #     [](std::shared_ptr<Graph>& g) { return InsertPrepackUnpack(g); })
-        # .def(
-        #     "_jit_pass_insert_prepack_unpack",
-        #     [](script::Module& module) { return InsertPrepackUnpack(module); })
         self.cpp_pybind_func = lambda path, lines: \
           _re_match_multi_line(r"\.def\((?P<key_space>\s*)\"(?P<key>[a-z0-9|_]+)\"",
                                path, lines)
