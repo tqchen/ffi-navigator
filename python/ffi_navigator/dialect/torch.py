@@ -21,24 +21,40 @@ class TorchProvider:
             lambda match, path, rg:
             pattern.Def(key=match.group("key"), path=path, range=rg),
             use_search=True)
+        self.cpp_generated = pattern.re_matcher(
+            r"{\"(?P<key>[a-z0-9|_|::]+)\"",
+            lambda match, path, rg:
+            pattern.Def(key="aten:"+match.group("key"), path=path, range=rg),
+            use_search=True)
         self.py_ops = pattern.re_matcher(
             r"ops\.(?P<key_namespace>[a-z0-9|_|]+)\.(?P<key_op>[a-z0-9|_|]+)",
             lambda match, path, rg:
             pattern.Ref(key=match.group("key_namespace") + "::" + match.group("key_op"),
                         path=path, range=rg),
             use_search=True)
+        self.py_variable_methods = pattern.re_matcher(
+            r"torch\.([A-Za-z0-9|_]+\.)*(?P<key_op>[a-z0-9|_|]+)",
+            lambda match, path, rg:
+            pattern.Ref(key="aten:"+match.group("key_op"),
+                        path=path, range=rg),
+            use_search=True)
 
     def _cc_extract(self, path, source, begin, end):
-        ret = self.c10_reg(path, source, begin, end)
-        for r in ret:
-            self.logger.info("Torch: matched %s", r.key)
-        return ret
+        results = self.c10_reg(path, source, begin, end)
+        generated_cpp = [
+             os.path.join("generated", "python_nn_functions.cpp"),
+             os.path.join("generated", "python_torch_functions.cpp"),
+             os.path.join("generated", "python_variable_methods.cpp")
+        ]
+        for generated in generated_cpp:
+            if path.endswith(generated):
+                results += self.cpp_generated(path, source, begin, end)
+        return results
 
     def _py_extract(self, path, source, begin, end):
         results = []
         results += self.py_ops(path, source, begin, end)
-        for res in results:
-            self.logger.info("Torch: py_extract %s", res.key)
+        results += self.py_variable_methods(path, source, begin, end)
         return results
 
     def init_pass(self, path, source):
