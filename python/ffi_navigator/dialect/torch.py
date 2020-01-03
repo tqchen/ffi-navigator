@@ -7,8 +7,8 @@ from .. import pattern
 from ..lsp import Range, Position
 
 
-def _re_match_multi_line(pat, prefix, path, lines):
-    source = "".join(lines)
+def _re_match_multi_line(pat, prefix, path, lines, logger):
+    source = "\n".join(lines)
     matches = list(re.finditer(r"\.def\((?P<key_space>\s*)\"(?P<key_func>[a-z0-9|_]+)\"", source))
     if matches == []:
         return []
@@ -30,6 +30,7 @@ def _re_match_multi_line(pat, prefix, path, lines):
         rg = Range(Position(line_num_start, pos_start), Position(line_num_end, pos_end))
         key = prefix + match.group("key_func")
         result.append(pattern.Def(key=key, path=path, range=rg))
+        logger.info("key=%s, line_num=%d, span=(%d, %d)", key, line_num, match.start(), match.end())
 
     return result
 
@@ -59,7 +60,7 @@ class TorchProvider:
             pattern.Def(key=match.group("key"), path=path, range=rg),
             use_search=True)
         self.cpp_pybind_func = lambda path, lines: \
-          _re_match_multi_line(r"\.def\(\s*\"(?P<key_func>[a-z0-9|_]+)\"", "", path, lines)
+          _re_match_multi_line(r"\.def\(\s*\"(?P<key_func>[a-z0-9|_]+)\"", "", path, lines, self.logger)
         self.py_ops = pattern.re_matcher(
             r"ops\.(?P<key_namespace>[a-z0-9|_|]+)\.(?P<key_op>[a-z0-9|_|]+)",
             lambda match, path, rg:
@@ -92,7 +93,7 @@ class TorchProvider:
             if path.endswith(generated):
                 results += self.cpp_generated(path, source, begin, end)
         for res in results:
-            self.logger.info("Extracted %s from %s", res.key, res.path)
+            self.logger.info("Extracted %s from %s, range=%s", res.key, res.path, res.range)
         return results
 
     def _py_extract(self, path, source, begin, end):
