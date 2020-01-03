@@ -65,3 +65,6 @@ class MXNetProvider:
                     res.range.end.character >= pos.character):
                     return res
         return None
+
+    def get_additional_scan_dirs(self, root_path):
+        return []

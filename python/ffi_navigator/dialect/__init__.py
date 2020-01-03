@@ -28,6 +28,6 @@ def autodetect_dialects(root_path, resolver, logger):
         dialects.append(TVMProvider(resolver, logger))
     elif os.path.exists(os.path.join(root_path, "python", "mxnet")):
         dialects.append(MXNetProvider(resolver, logger))
-    elif os.path.exists(os.path.join(root_path, "python", "torch")):
+    elif os.path.exists(os.path.join(root_path, "torch")):
         dialects.append(TorchProvider(resolver, logger))
     return dialects
