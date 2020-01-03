@@ -75,13 +75,17 @@ class TorchProvider:
         #     "_jit_pass_insert_prepack_unpack",
         #     [](script::Module& module) { return InsertPrepackUnpack(module); })
         self.cpp_pybind_func = lambda path, lines: \
-          _re_match_multi_line(r"\.def\((?P<key_space>\s*)\"(?P<key>[a-z0-9|_]+)\"", path, lines)
+          _re_match_multi_line(r"\.def\((?P<key_space>\s*)\"(?P<key>[a-z0-9|_]+)\"",
+                               path, lines)
         # A pattern for pybind-wrapped classes
         # py::class_<Method>(m, "ScriptMethod", py::dynamic_attr())
         # py::class_<CompilationUnit, std::shared_ptr<CompilationUnit>>(
         #     m, "CompilationUnit")
         self.cpp_pybind_class = lambda path, lines: \
-          _re_match_multi_line("py::class_\<[A-Za-z0-9|_|::|<|>]+(\,\s*[A-Za-z0-9|_|::|<|>]+)*\>\s*\((?P<key_space>\s*)m,\s*\"(?P<key>[A-Za-z0-9|_]+)\"(,\s*[A-Za-z0-9|_|::|<|>|(|)]+)*\)", path, lines)
+          _re_match_multi_line(r"py::class_\<[A-Za-z0-9|_|::|<|>]+(\,\s*[A-Za-z0-9|_|::|<|>]+)*\>"
+                               r"\s*\((?P<key_space>\s*)m,\s*\"(?P<key>[A-Za-z0-9|_]+)\""
+                               r"(,\s*[A-Za-z0-9|_|::|<|>|(|)]+)*\)",
+                               path, lines)
         # torch.ops.quantized.conv2d_relu (c10 ops)
         self.py_ops = pattern.re_matcher(
             r"ops\.(?P<key_namespace>[a-z0-9|_|]+)\.(?P<key_op>[a-z0-9|_|]+)",
