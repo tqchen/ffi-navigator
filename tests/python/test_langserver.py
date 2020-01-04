@@ -41,11 +41,11 @@ def run_check_langserver(tvm_path):
     uri = langserver.path2uri(os.path.join(tvm_path, "src/relay/backend/compile_engine.cc"))
     server.m_text_document__definition(
         textDocument={"uri": uri},
-        position={"line": 727, "character": 59 })
+        position={"line": 730, "character": 59 })
 
     server.m_text_document__references(
         textDocument={"uri": uri},
-        position={"line": 727, "character": 59 })
+        position={"line": 730, "character": 59 })
 
 
 
