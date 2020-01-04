@@ -90,6 +90,19 @@ def test_torch_dialect(pytorch_path):
     assert(res[0]['range']['start']['line'] == 2)
 
 
+def test_mxnet_dialect(mx_path):
+    server = langserver.BaseServer()
+    uri = langserver.path2uri(mx_path)
+    server.m_initialize(rootUri=uri)
+
+    res = run_find_definition(server,
+                              os.path.join(mx_path, "python/mxnet/executor.py"),
+                              55, 35)
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("c_api_executor.cc"))
+    assert(res[0]['range']['start']['line'] == 25)
+
+
 if __name__ == "__main__":
     # eyeballing test script
     logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
@@ -98,4 +111,6 @@ if __name__ == "__main__":
     if os.path.exists(tvm_path):
         test_tvm_dialect(tvm_path)
     pytorch_path = os.path.join("..", "dummy_repo", "pytorch")
+    mx_path = os.path.join("..", "dummy_repo", "mxnet")
     test_torch_dialect(pytorch_path)
+    test_mxnet_dialect(mx_path)
