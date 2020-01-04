@@ -48,7 +48,7 @@ eglot does not support multiple servers per language at the moment, the PR above
 
 ### PyTorch
 
-- C10 registered ops. In python they corresponds to functions under `torch.ops` namespace.
+- Jump to C10 registered ops. In python they corresponds to functions under `torch.ops` namespace.
   - Example: `torch.ops.quantized.conv2d (py)` -> `c10::RegisterOperators().op("quantized::conv2d", ...) (cpp)`
 - Jump to cpp functions wrapped by pybind.
   - Example: `torch._C._jit_script_class_compile (py)` -> `m.def( "_jit_script_class_compile", ...) (cpp)`
