@@ -33,7 +33,7 @@ If you use VSCode Remote SSH extension to develop a project on a remote server, 
 - Go to the Extensions tab in VSCode and click "install" in "FFI Navigator" extension shown in "LOCAL - INSTALLED"
 - You can now see "FFI Navigator" also appears at the "SSH: host - INSTALLED" side
 - Complete the python setup mentioned in the root's README on the remote server
-- Reload the window 
+- Reload the window
 
 ## Debug the Extension Client in VSCode Develop Mode
 

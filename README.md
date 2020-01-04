@@ -5,28 +5,6 @@ Most modern IDEs support find function definition within the same language(e.g. 
 This project is an example of that. Currently, it supports the PackedFunc FFI in the Apache TVM project. It is implemented as a [language server](https://microsoft.github.io/language-server-protocol/) that provides getDefinition function for FFI calls and returns the location of the corresponding C++ API in the TVM project. It complements the IDE tools that support navigation within the same language. We also have preliminary support for MXNet, DGL, and PyTorch, so we can do goto-definition from Python to C++ in these projects too.
 
 
-## Structure
-
-- python/ffi_navigator The analysis code and language server
-- vscode-extension language server extension for vscode
-
-## Features
-
-- Find definition/references of PackedFunc on the python and c++ side.
-- Find definition/references of Object/Node on the python and c++ side.
-  - move cursor to the object class name on the python side.
-  - move cursor to the type key string on the c++ side.
-
-These action works for a python symbol that refers a global PackedFunc(e.g. python/tvm/api.py:L59 `_api_internal._min_value`)
-and function name strings that occur in `TVM_REGISTER_GLOBAL`, `@register_func` and `GetPackedFunc`.
-Here are some examples you can try:
-
-- python/tvm/api.py:L59 move cursor to `_api_internal._min_value` and run goto definition.
-- src/relay/backend/compile_engine.cc:L728 `runtime::Registry::Get("relay.backend.lower")`,
-  move cursor to the name and run goto definition.
-- python/tvm/relay/expr.py:L191 move cursor to `Tuple` and run goto definition.
-You can also try out find references in all these cases
-
 ## Installation
 
 Install python package
@@ -34,29 +12,11 @@ Install python package
 pip install --user ffi-navigator
 ```
 
-For developing the python package locally, we can just make sure ffi_navigator is in your python path in bashrc.
-```bash
-export PYTHONPATH=${PYTHONPATH}:/path/to/ffi-navigator/python
-```
-You can also directly install fft_navigator to system Python packages so that you don't need to setup PYTHONPATH.
-Note that if you choose to install the package, you have to re-install it everytime you update the package.
-```bash
-python setup.py install
-```
-
 ### VSCode
 
 See [vscode-extension](vscode-extension)
 
 ### Emacs
-#### Goto definition from Python to C++
-![goto-def-py-cpp](https://github.com/tvmai/web-data/blob/master/images/ffi-navigator/emacs/tvm_find_def_py_cpp.gif)
-#### Goto definition from C++ to Python
-![goto-def-py-cpp](https://github.com/tvmai/web-data/blob/master/images/ffi-navigator/emacs/tvm_find_def_cpp_py.gif)
-#### Find reference across Python and C++
-![goto-def-py-cpp](https://github.com/tvmai/web-data/blob/master/images/ffi-navigator/emacs/tvm_find_reference.gif)
-#### Goto definition in PyTorch
-![goto-def-py-cpp](https://github.com/tvmai/web-data/blob/master/images/ffi-navigator/emacs/torch.gif)
 
 Install [lsp-mode](https://github.com/emacs-lsp/lsp-mode)
 
@@ -70,16 +30,61 @@ Add the following configuration
   :add-on? t))
 ```
 
-Set the project root to be ```/path/to/tvm``` using `M-x` `lsp-workspace-folders-add` `[RET]` `/path/to/tvm`
-Try out the goto definition by opening a python file
+- Use commands like `M-x` `lsp-find-definition` and `M-x` `lsp-find-references`
 
-- Move cursor to python/tvm/api.py line 59 `_api_internal._min_value`, type `M-x` `lsp-find-definition`
-
-if you use eglot instead, check out [this PR](https://github.com/tqchen/ffi-navigator/pull/1).
+If you use eglot instead, check out [this PR](https://github.com/tqchen/ffi-navigator/pull/1).
 eglot does not support multiple servers per language at the moment, the PR above contains a workaround.
 
-## Adding Support for New FFI Patterns
 
-The project is modularized into [dialect namespace](python/ffi_navigator/dialect) which is
-FFI convention(or even project) specific and generic parts.
-You will be able to extend the support by adding a new dialect.
+## Features
+
+### TVM FFI
+
+- Find definition/references of FFI objects(e.g. PackedFunc in TVM) on the python and c++ side.
+  - Jump from a python PackedFunc into ```TVM_REGISTER_GLOBAL```, ```@register_func```
+- Find definition/references of FFI objects on the python and c++ side.
+  - move cursor to the object class name on the python side.
+  - move cursor to the ```_type_key``` string on the c++ side.
+
+### PyTorch
+
+- C10 registered ops. In python they corresponds to functions under `torch.ops` namespace.
+  - Example: `torch.ops.quantized.conv2d (py)` -> `c10::RegisterOperators().op("quantized::conv2d", ...) (cpp)`
+- Jump to cpp functions wrapped by pybind.
+  - Example: `torch._C._jit_script_class_compile (py)` -> `m.def( "_jit_script_class_compile", ...) (cpp)`
+
+
+## Development
+
+For developing the python package locally, we can just make sure ffi_navigator is in your python path in bashrc.
+```bash
+export PYTHONPATH=${PYTHONPATH}:/path/to/ffi-navigator/python
+```
+
+### Project Structure
+
+- python/ffi_navigator The analysis code and language server
+- python/ffi_navigator/dialect Per project dialects
+- vscode-extension language server extension for vscode
+
+### Adding Support for New FFI Patterns
+
+Add your FFI convention to [dialect namespace](python/ffi_navigator/dialect).
+
+
+## Demo
+
+### VSCode
+
+See [vscode-extension](vscode-extension)
+
+### Emacs
+
+#### Goto definition from Python to C++
+![goto-def-py-cpp](https://github.com/tvmai/web-data/blob/master/images/ffi-navigator/emacs/tvm_find_def_py_cpp.gif)
+#### Goto definition from C++ to Python
+![goto-def-py-cpp](https://github.com/tvmai/web-data/blob/master/images/ffi-navigator/emacs/tvm_find_def_cpp_py.gif)
+#### Find reference across Python and C++
+![goto-def-py-cpp](https://github.com/tvmai/web-data/blob/master/images/ffi-navigator/emacs/tvm_find_reference.gif)
+#### Goto definition in PyTorch
+![goto-def-py-cpp](https://github.com/tvmai/web-data/blob/master/images/ffi-navigator/emacs/torch.gif)
