@@ -2,6 +2,13 @@
 
 VSCode extension for ffi nagivator.
 
+### Demo
+
+#### Navigation from Python to C++
+![](https://github.com/tvmai/web-data/blob/master/images/ffi-navigator/vscode_py2c.gif)
+
+#### Navigation from C++ to Python
+![](https://github.com/tvmai/web-data/blob/master/images/ffi-navigator/vscode_c2py.gif)
 
 ## Install the Extension to VSCode
 
