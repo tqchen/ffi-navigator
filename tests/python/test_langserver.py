@@ -4,6 +4,15 @@ import logging
 import os
 from ffi_navigator import workspace
 
+
+def run_find_definition(server, path, line, character):
+    uri = langserver.path2uri(path)
+    res = server.m_text_document__definition(
+        textDocument={"uri": uri},
+        position={"line": line, "character": character })
+    return res
+
+
 def test_tvm_dialect(tvm_path):
     # tested on git tag e69bd1284b50630df570b3a5779a801982203756
     server = langserver.BaseServer()
@@ -54,11 +63,10 @@ def test_torch_dialect(pytorch_path):
     uri = langserver.path2uri(pytorch_path)
     server.m_initialize(rootUri=uri)
 
-    uri = langserver.path2uri(os.path.join(pytorch_path, "torch/quantized/conv.py"))
-    res = server.m_text_document__definition(
-        textDocument={"uri": uri},
-        position={"line": 38, "character": 14 })
-    print(res)
+    path = os.path.join(pytorch_path, "torch/nn/quantized/modules/conv.py")
+    res = run_find_definition(server, path, 38, 28)
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("qconv.cpp"))
 
 
 if __name__ == "__main__":
