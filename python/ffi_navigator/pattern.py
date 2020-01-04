@@ -8,9 +8,6 @@ from bisect import bisect
 
 from .lsp import Range, Position, Location
 
-# We use simple regular expression matching
-# Note that such match may not take account into fact like
-# the code is in a multiline comment block, but such case is rare
 
 class Pattern:
     """Base class of all interesting code patterns."""

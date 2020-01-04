@@ -23,6 +23,10 @@ class BaseProvider(object):
         self.dialect_name = dialect_name
 
     def get_additional_scan_dirs(self, root_path):
+        """If the repository structure is not organized as src, include, python,
+        overwride this method to register specific directories.
+        See Torch dialect for example.
+        """
         return []
 
     def init_pass(self, path, source):
@@ -33,9 +37,11 @@ class BaseProvider(object):
             self.logger.info("%s: found python path %s", self.dialect_name, self._pypath_root)
 
     def _cc_extract(self, path, source, begin, end):
+        """Override this method in the derived class."""
         return []
 
     def _py_extract(self, path, source, begin, end):
+        """Override this method in the derived class."""
         return []
 
     def extract(self, path, source, begin=0, end=None):
