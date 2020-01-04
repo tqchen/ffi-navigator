@@ -1,40 +1,9 @@
 """Torch FFI convention"""
 import os
 import re
-import numpy as np
-from bisect import bisect
 from .. import pattern
 from ..lsp import Range, Position
 from .base_provider import BaseProvider
-
-
-def _re_match_multi_line(pat, fcreate):
-    def _matcher(path, lines):
-        source = "\n".join(lines)
-        matches = list(re.finditer(pat, source))
-        if matches == []:
-            return []
-        line_counts = list(map(lambda line: len(line)+1, lines)) # +1 for newline
-        cumsum = np.cumsum(line_counts)
-
-        next_begin = 0
-        result = []
-        # find line num, start and end pos for each match
-        for match in matches:
-            line_num = int(bisect(cumsum[next_begin:], match.start())) + next_begin
-            next_begin = line_num
-            line_num_start = line_num
-            line_num_end = line_num
-            if match.group("key_space"):
-                line_num_end += 1
-            pos_start = match.start() - int(cumsum[line_num_start-1])
-            pos_end = match.end() - int(cumsum[line_num_end-1])
-            rg = Range(Position(line_num_start, pos_start), Position(line_num_end, pos_end))
-            result.append(fcreate(match, path, rg))
-
-        return result
-
-    return _matcher
 
 
 class TorchProvider(BaseProvider):
@@ -74,19 +43,19 @@ class TorchProvider(BaseProvider):
         #     "_jit_pass_insert_prepack_unpack",
         #     [](std::shared_ptr<Graph>& g) { return InsertPrepackUnpack(g); })
         self.cpp_pybind_func = \
-          _re_match_multi_line(r"\.def\((?P<key_space>\s*)\"(?P<key>[a-z0-9|_]+)\"",
-                               lambda match, path, rg: \
-                               pattern.Def(key=match.group("key"), path=path, range=rg))
+          pattern.re_multi_line_matcher(r"\.def\((?P<key_space>\s*)\"(?P<key>[a-z0-9|_]+)\"",
+                                        lambda match, path, rg: \
+                                        pattern.Def(key=match.group("key"), path=path, range=rg))
         # A pattern for pybind-wrapped classes
         # py::class_<Method>(m, "ScriptMethod", py::dynamic_attr())
         # py::class_<CompilationUnit, std::shared_ptr<CompilationUnit>>(
         #     m, "CompilationUnit")
         self.cpp_pybind_class = \
-          _re_match_multi_line(r"py::class_\<[A-Za-z0-9|_|::|<|>]+(\,\s*[A-Za-z0-9|_|::|<|>]+)*\>"
-                               r"\s*\((?P<key_space>\s*)m,\s*\"(?P<key>[A-Za-z0-9|_]+)\""
-                               r"(,\s*[A-Za-z0-9|_|::|<|>|(|)]+)*\)",
-                               lambda match, path, rg: \
-                               pattern.Def(key=match.group("key"), path=path, range=rg))
+          pattern.re_multi_line_matcher(r"py::class_\<[A-Za-z0-9|_|::|<|>]+(\,\s*[A-Za-z0-9|_|::|<|>]+)*\>"
+                                        r"\s*\((?P<key_space>\s*)m,\s*\"(?P<key>[A-Za-z0-9|_]+)\""
+                                        r"(,\s*[A-Za-z0-9|_|::|<|>|(|)]+)*\)",
+                                        lambda match, path, rg: \
+                                        pattern.Def(key=match.group("key"), path=path, range=rg))
         # torch.ops.quantized.conv2d_relu (c10 ops)
         self.py_ops = pattern.re_matcher(
             r"ops\.(?P<key_namespace>[a-z0-9|_|]+)\.(?P<key_op>[a-z0-9|_|]+)",
