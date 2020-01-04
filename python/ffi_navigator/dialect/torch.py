@@ -94,8 +94,7 @@ class TorchProvider(BaseProvider):
         return results
 
     def _py_extract(self, path, source, begin, end):
-        results = []
-        results += self.py_ops(path, source, begin, end)
+        results = self.py_ops(path, source, begin, end)
         results += self.py_wrapped(path, source, begin, end)
         return results
 

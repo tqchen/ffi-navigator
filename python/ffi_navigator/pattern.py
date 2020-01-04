@@ -143,7 +143,7 @@ def re_multi_line_matcher(rexpr, fcreate):
         next_begin = 0
         result = []
         for match in matches:
-            line_num_start = int(bisect(cumsum[next_begin:], match.start())) + next_begin
+            line_num_start = bisect(cumsum[next_begin:], match.start()) + next_begin
             next_begin = line_num_start
             line_num_end = line_num_start + match.group().count("\n")
             pos_start = match.start() - int(cumsum[line_num_start-1])
