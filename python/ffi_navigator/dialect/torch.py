@@ -128,5 +128,5 @@ class TorchProvider(BaseProvider):
 
     def extract(self, path, source, begin=0, end=None):
         if not path.endswith("_test.cpp"):
-            return super(TorchProvider, self).extract(path, source, begin, end)
+            return super().extract(path, source, begin, end)
         return []
