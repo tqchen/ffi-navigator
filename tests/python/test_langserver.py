@@ -2,7 +2,6 @@ from ffi_navigator import langserver
 
 import logging
 import os
-from ffi_navigator import workspace
 
 
 def run_find_definition(server, path, line, character):
