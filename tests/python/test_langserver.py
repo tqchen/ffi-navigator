@@ -103,6 +103,17 @@ def test_mxnet_dialect(mx_path):
     assert(res[0]['range']['start']['line'] == 25)
 
 
+def test_dgl_dialect(dgl_path):
+    server = langserver.BaseServer()
+    uri = langserver.path2uri(dgl_path)
+    server.m_initialize(rootUri=uri)
+
+    res = run_find_definition(server,
+                              os.path.join(dgl_path, "python/dgl/nodeflow.py"),
+                              16, 20)
+    # assert(len(res) > 0)
+
+
 if __name__ == "__main__":
     # eyeballing test script
     logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
@@ -112,5 +123,7 @@ if __name__ == "__main__":
         test_tvm_dialect(tvm_path)
     pytorch_path = os.path.join("..", "dummy_repo", "pytorch")
     mx_path = os.path.join("..", "dummy_repo", "mxnet")
+    dgl_path = os.path.join("..", "dummy_repo", "dgl")
     test_torch_dialect(pytorch_path)
     test_mxnet_dialect(mx_path)
+    test_dgl_dialect(dgl_path)
