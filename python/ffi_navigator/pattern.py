@@ -149,9 +149,7 @@ def re_multi_line_matcher(rexpr, fcreate):
             line_num = int(bisect(cumsum[next_begin:], match.start())) + next_begin
             next_begin = line_num
             line_num_start = line_num
-            line_num_end = line_num
-            if match.group("key_space"):
-                line_num_end += 1
+            line_num_end = line_num + match.group().count("\n")
             pos_start = match.start() - int(cumsum[line_num_start-1])
             pos_end = match.end() - int(cumsum[line_num_end-1])
             rg = Range(Position(line_num_start, pos_start), Position(line_num_end, pos_end))

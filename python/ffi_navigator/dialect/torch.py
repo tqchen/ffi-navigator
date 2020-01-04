@@ -43,7 +43,7 @@ class TorchProvider(BaseProvider):
         #     "_jit_pass_insert_prepack_unpack",
         #     [](std::shared_ptr<Graph>& g) { return InsertPrepackUnpack(g); })
         self.cpp_pybind_func = \
-          pattern.re_multi_line_matcher(r"\.def\((?P<key_space>\s*)\"(?P<key>[a-z0-9|_]+)\"",
+          pattern.re_multi_line_matcher(r"\.def\(\s*\"(?P<key>[a-z0-9|_]+)\"",
                                         lambda match, path, rg: \
                                         pattern.Def(key=match.group("key"), path=path, range=rg))
         # A pattern for pybind-wrapped classes
@@ -52,7 +52,7 @@ class TorchProvider(BaseProvider):
         #     m, "CompilationUnit")
         self.cpp_pybind_class = \
           pattern.re_multi_line_matcher(r"py::class_\<[A-Za-z0-9|_|::|<|>]+(\,\s*[A-Za-z0-9|_|::|<|>]+)*\>"
-                                        r"\s*\((?P<key_space>\s*)m,\s*\"(?P<key>[A-Za-z0-9|_]+)\""
+                                        r"\s*\(\s*m,\s*\"(?P<key>[A-Za-z0-9|_]+)\""
                                         r"(,\s*[A-Za-z0-9|_|::|<|>|(|)]+)*\)",
                                         lambda match, path, rg: \
                                         pattern.Def(key=match.group("key"), path=path, range=rg))
