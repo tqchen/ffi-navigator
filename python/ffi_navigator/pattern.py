@@ -142,21 +142,19 @@ def re_multi_line_matcher(rexpr, fcreate):
         line_counts = map(lambda line: len(line)+1, lines) # +1 for newline
         cumsum = np.cumsum(list(line_counts))
 
+        # find line num, start and end pos for each match
         next_begin = 0
         result = []
-        # find line num, start and end pos for each match
         for match in matches:
-            line_num = int(bisect(cumsum[next_begin:], match.start())) + next_begin
-            next_begin = line_num
-            line_num_start = line_num
-            line_num_end = line_num + match.group().count("\n")
+            line_num_start = int(bisect(cumsum[next_begin:], match.start())) + next_begin
+            next_begin = line_num_start
+            line_num_end = line_num_start + match.group().count("\n")
             pos_start = match.start() - int(cumsum[line_num_start-1])
             pos_end = match.end() - int(cumsum[line_num_end-1])
             rg = Range(Position(line_num_start, pos_start), Position(line_num_end, pos_end))
             result.append(fcreate(match, path, rg))
 
         return result
-
     return _matcher
 
 
