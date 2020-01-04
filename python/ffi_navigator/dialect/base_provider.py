@@ -24,7 +24,7 @@ class BaseProvider(object):
 
     def get_additional_scan_dirs(self, root_path):
         """If the repository structure is not organized as src, include, python,
-        overwride this method to register specific directories.
+        override this method to register specific directories.
         See Torch dialect for example.
         """
         return []
