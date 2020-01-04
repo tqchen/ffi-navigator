@@ -1,8 +1,9 @@
 """DGL FFI convention"""
 import os
 from .. import pattern
+from .base_provider import BaseProvider
 
-class DGLProvider:
+class DGLProvider(BaseProvider):
     """Provider for DGL FFI.
 
     Parameters
@@ -13,7 +14,7 @@ class DGLProvider:
     logger : Logger object
     """
     def __init__(self, resolver, logger):
-        self.resolver = resolver
+        super().__init__(resolver, logger, "dgl")
         self.cc_def_packed = pattern.macro_matcher(
             ["DGL_REGISTER_API", "DGL_REGISTER_GLOBAL"],
             lambda key, path, rg, _:
@@ -39,9 +40,7 @@ class DGLProvider:
 
         self._pypath_api_internal = None
         self._pypath_funcmod = None
-        self._pypath_root = None
         self._pypath_init = None
-        self.logger = logger
 
     def _wrap_py_reg_func(self, key, path, rg, reg):
         new_mod, new_name = self.resolver.resolve(path, reg)
@@ -83,40 +82,8 @@ class DGLProvider:
         return results
 
     def init_pass(self, path, source):
-        """This function will be called for each file before extract."""
         if path.endswith("python/dgl/__init__.py"):
-            self._pypath_root = os.path.abspath(path[:-len("/__init__.py")])
+            super().init_pass(path, source)
             self._pypath_init = os.path.abspath(path[:-len(".py")])
             self._pypath_funcmod = os.path.join(self._pypath_root, "_ffi", "function")
             self._pypath_api_internal = os.path.join(self._pypath_root, "_api_internal")
-            self.resolver.add_package("dgl", self._pypath_root)
-            self.logger.info("DGL: find python path %s", self._pypath_root)
-
-    def extract(self, path, source, begin=0, end=None):
-        """This function will be called for each file
-
-        Extract patterns in the file as specified in pattern.py and return them.
-        """
-        if path.endswith(".cc") or path.endswith(".h"):
-            return self._cc_extract(path, source, begin, end)
-        elif path.endswith(".py"):
-            return self._py_extract(path, source, begin, end)
-        return []
-
-    def extract_symbol(self, path, source, pos):
-        """Extract possible pattern in the specified location, if not found, return None."""
-        # only search a small context
-        begin = max(pos.line - 1, 0)
-        end = min(pos.line + 2, len(source))
-        # We can use extract and verify to get the pattern.
-        for res in self.extract(path, source, begin, end):
-            if (isinstance(res, (pattern.Ref, pattern.Def)) and
-                res.range.start.line <= pos.line and
-                res.range.end.line >= pos.line and
-                res.range.start.character <= pos.character and
-                res.range.end.character >= pos.character):
-                return res
-        return None
-
-    def get_additional_scan_dirs(self, root_path):
-        return []

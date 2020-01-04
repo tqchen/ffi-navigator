@@ -3,11 +3,11 @@ from typing import Optional
 
 import re
 import attr
+import numpy as np
+from bisect import bisect
+
 from .lsp import Range, Position, Location
 
-# We use simple regular expression matching
-# Note that such match may not take account into fact like
-# the code is in a multiline comment block, but such case is rare
 
 class Pattern:
     """Base class of all interesting code patterns."""
@@ -90,8 +90,8 @@ def re_matcher(rexpr, fcreate, use_search=False):
     """
     Parameters
     ----------
-    macro_names : list
-        List of macro names to match.
+    rexpr : str
+        A regexp pattern to match.
 
     fcreate : Function (match, path, range) -> result.
 
@@ -116,6 +116,42 @@ def re_matcher(rexpr, fcreate, use_search=False):
                 if item:
                     results.append(item)
         return results
+    return _matcher
+
+
+def re_multi_line_matcher(rexpr, fcreate):
+    """ Matches a pattern spanning multiple lines
+
+    Parameters
+    ----------
+    rexpr : str
+        A regexp pattern to match.
+
+    fcreate : Function (match, path, range) -> result.
+    """
+    rexpr = re.compile(rexpr)
+
+    def _matcher(path, lines):
+        source = "\n".join(lines)
+        matches = list(rexpr.finditer(source))
+        if matches == []:
+            return []
+        line_counts = map(lambda line: len(line)+1, lines) # +1 for newline
+        cumsum = np.cumsum(list(line_counts))
+
+        # find line num, start and end pos for each match
+        next_begin = 0
+        result = []
+        for match in matches:
+            line_num_start = int(bisect(cumsum[next_begin:], match.start())) + next_begin
+            next_begin = line_num_start
+            line_num_end = line_num_start + match.group().count("\n")
+            pos_start = match.start() - int(cumsum[line_num_start-1])
+            pos_end = match.end() - int(cumsum[line_num_end-1])
+            rg = Range(Position(line_num_start, pos_start), Position(line_num_end, pos_end))
+            result.append(fcreate(match, path, rg))
+
+        return result
     return _matcher
 
 
