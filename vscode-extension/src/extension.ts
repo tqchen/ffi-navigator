@@ -20,7 +20,7 @@ export function activate(context: ExtensionContext) {
         execSync("pip3 show ffi_navigator");
     } catch (error) {
         window.showErrorMessage('ffi_navigator is not installed.' +
-                                ' Please run "pip3 install ffi_nagivator" and reload the window');
+                                ' Please run "pip3 install ffi_navigator" and reload the window');
         return ;
     }
 
