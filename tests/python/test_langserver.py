@@ -26,9 +26,12 @@ def test_tvm_dialect(tvm_path):
     server.m_initialize(rootUri=langserver.path2uri(tvm_path))
 
     run_find_references(server,
+                        os.path.join(tvm_path, "include/tvm/expr.h"),
+                        119, 49)
+
+    run_find_references(server,
                         os.path.join(tvm_path, "python/tvm/api.py"),
                         58, 33)
-
     run_find_definition(server,
                         os.path.join(tvm_path, "python/tvm/relay/expr.py"),
                         177, 14)

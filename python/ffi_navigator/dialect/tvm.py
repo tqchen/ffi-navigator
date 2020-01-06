@@ -40,7 +40,7 @@ class TVMProvider(BaseProvider):
         self.py_init_api = pattern.macro_matcher(
             ["_init_api"], lambda key, path, *_: self._wrap_py_init_api(key, path))
         self.py_reg_object = pattern.decorator_matcher(
-            ["register_object", "register_relay_node"], "class",
+            ["register_object", "register_node", "register_relay_node"], "class",
             lambda key, path, rg, reg:
             pattern.Ref(key="t:relay."+key, path=path, range=rg)
             if reg.endswith("relay_node")
@@ -88,6 +88,7 @@ class TVMProvider(BaseProvider):
         results += self.py_init_api(path, source, begin, end)
         results += self.py_reg_object(path, source, begin, end)
         results += self.py_reg_func(path, source, begin, end)
+
         if path.startswith(self._pypath_api_internal):
             export_item = pattern.Export(
                 key_prefix="_", path=path,
