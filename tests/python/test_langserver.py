@@ -3,6 +3,7 @@ from ffi_navigator import langserver
 import logging
 import os
 
+curr_path = os.path.dirname(os.path.realpath(os.path.expanduser(__file__)))
 
 def run_find_definition(server, path, line, character):
     uri = langserver.path2uri(path)
@@ -20,8 +21,14 @@ def run_find_references(server, path, line, character):
     return res
 
 
-def test_tvm_dialect(tvm_path):
+def test_tvm_dialect(tvm_path=None):
     # tested on git tag e69bd1284b50630df570b3a5779a801982203756
+    tvm_path = os.path.join(curr_path, "..", "..", "..", "tvm")
+
+    if not os.path.exists(tvm_path):
+        logging.info("Skip tvm tests")
+        return
+
     server = langserver.BaseServer()
     server.m_initialize(rootUri=langserver.path2uri(tvm_path))
 
@@ -65,7 +72,9 @@ def test_tvm_dialect(tvm_path):
                         730, 59)
 
 
-def test_torch_dialect(pytorch_path):
+def test_torch_dialect():
+    pytorch_path = os.path.join(curr_path, "..", "dummy_repo", "pytorch")
+
     server = langserver.BaseServer()
     uri = langserver.path2uri(pytorch_path)
     server.m_initialize(rootUri=uri)
@@ -100,7 +109,8 @@ def test_torch_dialect(pytorch_path):
     assert(res[0]['range']['start']['line'] == 2)
 
 
-def test_mxnet_dialect(mx_path):
+def test_mxnet_dialect():
+    mx_path = os.path.join(curr_path, "..", "dummy_repo", "mxnet")
     server = langserver.BaseServer()
     uri = langserver.path2uri(mx_path)
     server.m_initialize(rootUri=uri)
@@ -113,7 +123,8 @@ def test_mxnet_dialect(mx_path):
     assert(res[0]['range']['start']['line'] == 25)
 
 
-def test_dgl_dialect(dgl_path):
+def test_dgl_dialect():
+    dgl_path = os.path.join(curr_path, "..", "dummy_repo", "dgl")
     server = langserver.BaseServer()
     uri = langserver.path2uri(dgl_path)
     server.m_initialize(rootUri=uri)
@@ -127,13 +138,7 @@ def test_dgl_dialect(dgl_path):
 if __name__ == "__main__":
     # eyeballing test script
     logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
-    curr_dir = os.path.dirname(os.path.realpath(os.path.expanduser(__file__)))
-    tvm_path = os.path.abspath(os.path.join(curr_dir, "..", "..", "..", "tvm"))
-    if os.path.exists(tvm_path):
-        test_tvm_dialect(tvm_path)
-    pytorch_path = os.path.join("..", "dummy_repo", "pytorch")
-    mx_path = os.path.join("..", "dummy_repo", "mxnet")
-    dgl_path = os.path.join("..", "dummy_repo", "dgl")
-    test_torch_dialect(pytorch_path)
-    test_mxnet_dialect(mx_path)
-    test_dgl_dialect(dgl_path)
+    test_tvm_dialect()
+    test_torch_dialect()
+    test_mxnet_dialect()
+    test_dgl_dialect()
