@@ -132,11 +132,11 @@ def re_multi_line_matcher(rexpr, fcreate):
     rexpr = re.compile(rexpr)
 
     def _matcher(path, lines):
-        source = "\n".join(lines)
+        source = "".join(lines)
         matches = list(rexpr.finditer(source))
         if matches == []:
             return []
-        line_counts = map(lambda line: len(line)+1, lines) # +1 for newline
+        line_counts = map(lambda line: len(line), lines)
         cumsum = np.cumsum(list(line_counts))
 
         # find line num, start and end pos for each match
@@ -148,6 +148,7 @@ def re_multi_line_matcher(rexpr, fcreate):
             line_num_end = line_num_start + match.group().count("\n")
             pos_start = match.start() - int(cumsum[line_num_start-1])
             pos_end = match.end() - int(cumsum[line_num_end-1])
+            assert(pos_start >= 0 and pos_end >= 0)
             rg = Range(Position(line_num_start, pos_start), Position(line_num_end, pos_end))
             result.append(fcreate(match, path, rg))
 

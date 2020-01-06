@@ -82,6 +82,14 @@ def test_torch_dialect(pytorch_path):
     assert(res[0]['range']['start']['line'] == 95)
 
     res = run_find_definition(server,
+                              os.path.join(pytorch_path, "torch/jit/__init__.py"),
+                              25, 30)
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("init.cpp"))
+    assert(res[0]['range']['start']['line'] == 1)
+    assert(res[0]['range']['end']['character'] == 27)
+
+    res = run_find_definition(server,
                               os.path.join(pytorch_path, "torch/nn/functional.py"),
                               16, 30)
     assert(len(res) > 0)
