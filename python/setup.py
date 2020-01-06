@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name = "ffi-navigator",
-    version = "0.4.0",
+    version = "0.4.1",
     license="Apache-2.0",
     description = "Language server for navigating FFI calls",
     author = "tvm community",
