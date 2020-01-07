@@ -2,6 +2,12 @@
 
 name: $(Date:yyyyMMdd)$(Rev:.r)
 
+trigger:
+  - master
+
+pr:
+  - master
+
 jobs:
   - job: 'PyTest'
     strategy:
