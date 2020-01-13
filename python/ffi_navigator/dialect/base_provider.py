@@ -3,6 +3,7 @@ import os
 from .. import pattern
 from ..util import normalize_path
 
+
 class BaseProvider(object):
     """Base class for dialect specific providers.
 
