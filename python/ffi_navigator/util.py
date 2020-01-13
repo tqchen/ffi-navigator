@@ -1,4 +1,9 @@
+import sys
 from pathlib import Path
+
+
+def is_win():
+    return sys.platform == "win32"
 
 
 def join_path(root_path, relative_path):

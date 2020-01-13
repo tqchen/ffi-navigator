@@ -1,6 +1,9 @@
 from ffi_navigator.import_resolver import PyImportResolver
+from ffi_navigator.util import is_win
 
 def test_import_resolver():
+    if is_win(): return
+
     doc_expr = """
     from . import make as _make
     """
