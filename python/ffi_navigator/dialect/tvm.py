@@ -1,6 +1,7 @@
 """TVM FFI convention"""
 import os
 from .. import pattern
+from ..util import normalize_path
 from .base_provider import BaseProvider
 
 
@@ -98,7 +99,7 @@ class TVMProvider(BaseProvider):
         return results
 
     def init_pass(self, path, source):
-        if path.endswith("python/tvm/__init__.py"):
+        if path.endswith(normalize_path("python/tvm/__init__.py")):
             super().init_pass(path, source)
             self._pypath_init = os.path.abspath(path[:-len(".py")])
             self._pypath_funcmod = os.path.join(self._pypath_root, "_ffi", "function")

@@ -10,8 +10,14 @@ from . import workspace, pattern, lsp
 from pyls_jsonrpc import dispatchers, endpoint, streams
 
 
+def is_win():
+    return sys.platform == "win32"
+
 def uri2path(uri):
-    return urlparse(uri).path
+    raw_path = urlparse(uri).path
+    if is_win():
+        return str(pathlib.Path(raw_path[1:])) # workaround for path like /D:/...
+    return raw_path
 
 def path2uri(path):
     return pathlib.Path(os.path.abspath(path)).as_uri()
