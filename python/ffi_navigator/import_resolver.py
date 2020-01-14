@@ -55,6 +55,7 @@ class PyImportResolver:
             The resolved name, can be None if it is a module.
         """
         # lookup packages
+        mod_path = os.path.abspath(mod_path)
         if not mod_path.startswith(normalize_path("/")):
             arr = mod_path.split(normalize_path("/"), 1)
             if arr[0] in self._pkg2modpath:
@@ -66,33 +67,26 @@ class PyImportResolver:
 
         self._recurr_depth = 0
         arr = attr_name.split(".", 1)
-        print("resolve:", mod_path, arr, attr_name)
         if len(arr) == 1:
             return self._resolve_var(mod_path, arr[0], allow_combine_path=False)
         new_mod, new_var = self._resolve_var(
             mod_path, arr[0], allow_combine_path=False)
-        print("resolve new_mod, new_var:", new_mod, new_var)
         if new_var is None:
             return self.resolve(new_mod, arr[1])
         # Failed to resolve further
-        print("failed")
         return (mod_path, attr_name)
 
     def _resolve_var(self, mod_path, var_name, allow_combine_path=True):
         """Resolve from mod_path import var_name"""
         # Avoid deep recursion
         self._recurr_depth += 1
-        print("_resolve_var 1, mod_path, var_name, allow_combine_path:", mod_path, var_name, allow_combine_path)
         if self._recurr_depth > 10:
             return (mod_path, var_name)
         # First check whether we can resolve to a module
         if allow_combine_path:
             combined_path = os.path.join(mod_path, var_name)
-            print(self._modpath2imports.keys())
-            print(self._modpath2init.keys())
             if (combined_path in self._modpath2imports or
                 combined_path in self._modpath2init):
-                print("returning from combined_path")
                 return (combined_path, None)
         # mod/ -> mod/__init__
         if mod_path in self._modpath2init:
@@ -100,15 +94,12 @@ class PyImportResolver:
         if mod_path not in self._modpath2imports:
             return (mod_path, var_name)
         # Check the imports
-        print("_resolve_var updated mod_path:", mod_path)
         imports = self._modpath2imports[mod_path]
-        print("imports:", imports)
         if var_name in imports:
             new_mod, new_var = imports[var_name]
             if new_var is None:
                 return (new_mod, new_var)
             return self._resolve_var(new_mod, new_var)
-        print("var_name not in imports")
         return (mod_path, var_name)
 
     def _resolve_mod_path(self, curr_dir, from_mod):
@@ -134,19 +125,17 @@ class PyImportResolver:
         source : list or str
             The source code.
         """
+        path = os.path.abspath(path)
         if path.endswith(".py"):
             path = path[:-3]
         imports = {}
-        print("update_doc path: ", path)
         for item in find_py_imports(source):
             target_mod = self._resolve_mod_path(
                 os.path.dirname(path), item.from_mod)
-            print("target_mod:", target_mod, item, os.path.dirname(path))
             if target_mod is not None:
                 alias = item.alias if item.alias else item.import_name
                 imports[alias] = (target_mod, item.import_name)
         self._modpath2imports[path] = imports
         init = normalize_path("/__init__")
         if path.endswith(init):
-            print("init", init)
             self._modpath2init[path[:-len(init)]] = path

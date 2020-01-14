@@ -67,16 +67,16 @@ class Workspace:
         self.logger.info("Workspace.update_dir %s start", dirname)
         # intialize pass
         for path in sorted(glob.glob(join_path(dirname, "**/*.py"), recursive=True)):
-            self.init_pass(os.path.abspath(path), open(path).readlines())
+            self.init_pass(path, open(path).readlines())
         # normal scans
         for path in sorted(glob.glob(join_path(dirname, "**/*.py"), recursive=True)):
-            self.update_doc(os.path.abspath(path), open(path).readlines())
+            self.update_doc(path, open(path).readlines())
         for path in sorted(glob.glob(join_path(dirname, "**/*.h"), recursive=True)):
-            self.update_doc(os.path.abspath(path), open(path).readlines())
+            self.update_doc(path, open(path).readlines())
         for path in sorted(glob.glob(join_path(dirname, "**/*.cc"), recursive=True)):
-            self.update_doc(os.path.abspath(path), open(path).readlines())
+            self.update_doc(path, open(path).readlines())
         for path in sorted(glob.glob(join_path(dirname, "**/*.cpp"), recursive=True)):
-            self.update_doc(os.path.abspath(path), open(path).readlines())
+            self.update_doc(path, open(path).readlines())
         self.logger.info("Workspace.update_dir %s finish", dirname)
 
     def update_doc(self, path, source):
