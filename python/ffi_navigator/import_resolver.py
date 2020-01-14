@@ -55,7 +55,6 @@ class PyImportResolver:
             The resolved name, can be None if it is a module.
         """
         # lookup packages
-        mod_path = os.path.abspath(mod_path)
         if not mod_path.startswith(normalize_path("/")):
             arr = mod_path.split(normalize_path("/"), 1)
             if arr[0] in self._pkg2modpath:

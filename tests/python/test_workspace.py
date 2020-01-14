@@ -1,6 +1,7 @@
 import logging
 import os
 from ffi_navigator import workspace
+from ffi_navigator.util import normalize_path
 
 def run_check_workspace(tvm_path):
     ws = workspace.Workspace()
@@ -9,9 +10,9 @@ def run_check_workspace(tvm_path):
     def log_resolve(mod_path, var_name):
         logging.info("Resolve %s -> %s", (mod_path, var_name) , ws.pyimport_resolver.resolve(mod_path, var_name))
 
-    log_resolve("tvm/relay/_expr", "_init_api")
-    log_resolve("tvm/relay/expr", "_expr.Let")
-    log_resolve("tvm/stmt", "_make")
+    log_resolve(normalize_path("tvm/relay/_expr"), "_init_api")
+    log_resolve(normalize_path("tvm/relay/expr"), "_expr.Let")
+    log_resolve(normalize_path("tvm/stmt"), "_make")
 
     def log_packed_def(func_name):
         logging.info("GetDef %s -> %s", func_name, ws.key2defs.get(func_name, []))
@@ -24,14 +25,11 @@ def run_check_workspace(tvm_path):
     log_find_refs("make.LetStmt")
     log_find_refs("relay.backend.lower")
 
-
     def log_find_def(mod, name):
         logging.info("FindDefs %s:%s -> %s", mod, name, ws.find_defs(mod, name))
 
-    log_find_def("tvm/relay/expr", "_make.Call")
-    log_find_def("tvm/stmt", "_make.LetStmt")
-
-
+    log_find_def(normalize_path("tvm/relay/expr"), "_make.Call")
+    log_find_def(normalize_path("tvm/stmt"), "_make.LetStmt")
 
 
 if __name__ == "__main__":

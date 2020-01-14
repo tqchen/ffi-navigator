@@ -37,11 +37,11 @@ def test_import_resolver():
     resolver.update_doc("/tvm/stmt.py", doc_stmt)
     resolver.update_doc("/tvm/make.py", doc_make)
 
-    assert resolver.resolve("/tvm", "relay.add") == (os.path.abspath("/tvm/relay/_expr"), "add")
-    assert resolver.resolve("/tvm/relay", "expr.sub") == (os.path.abspath("/tvm/relay/expr"), "sub")
-    assert resolver.resolve("/tvm/relay/expr", "_init_api") == (os.path.abspath("/tvm/_ffi/function"), "_init_api")
-    assert resolver.resolve("/tvm/stmt", "_make") == (os.path.abspath("/tvm/make"), None)
-    assert resolver.resolve("/tvm/relay/backend/_backend", "_init_api") == (
+    assert resolver.resolve(os.path.abspath("/tvm"), "relay.add") == (os.path.abspath("/tvm/relay/_expr"), "add")
+    assert resolver.resolve(os.path.abspath("/tvm/relay"), "expr.sub") == (os.path.abspath("/tvm/relay/expr"), "sub")
+    assert resolver.resolve(os.path.abspath("/tvm/relay/expr"), "_init_api") == (os.path.abspath("/tvm/_ffi/function"), "_init_api")
+    assert resolver.resolve(os.path.abspath("/tvm/stmt"), "_make") == (os.path.abspath("/tvm/make"), None)
+    assert resolver.resolve(os.path.abspath("/tvm/relay/backend/_backend"), "_init_api") == (
         os.path.abspath("/tvm/_ffi/function"), "_init_api")
 
 if __name__ == "__main__":
