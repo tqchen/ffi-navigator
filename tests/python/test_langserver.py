@@ -29,6 +29,7 @@ def test_tvm_dialect():
         server = langserver.BaseServer()
         server.m_initialize(rootUri=langserver.path2uri(tvm_path))
 
+        # Constant
         res = run_find_definition(server,
                                   join_path(tvm_path, "python/tvm/relay/expr.py"),
                                   15, 14)
@@ -36,6 +37,7 @@ def test_tvm_dialect():
         assert(res[0]['uri'].endswith("expr.h"))
         assert(res[0]['range']['start']['line'] == 33)
 
+        # _make.ProducerConsumer
         res = run_find_definition(server,
                                   join_path(tvm_path, "python/tvm/stmt.py"),
                                   26, 30)
@@ -43,6 +45,7 @@ def test_tvm_dialect():
         assert(res[0]['uri'].endswith("api_ir.cc"))
         assert(res[0]['range']['start']['line'] == 14)
 
+        # _make.LetStmt
         res = run_find_definition(server,
                                   join_path(tvm_path, "python/tvm/stmt.py"),
                                   46, 20)
@@ -50,7 +53,7 @@ def test_tvm_dialect():
         assert(res[0]['uri'].endswith("api_ir.cc"))
         assert(res[0]['range']['start']['line'] == 15)
 
-        # lookup relay.backend.lower from c++ to python
+        # Get("relay.backend.lower") from c++ to python
         res = run_find_definition(server,
                                   join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
                                   74, 59)
