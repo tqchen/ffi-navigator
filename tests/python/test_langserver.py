@@ -23,56 +23,92 @@ def run_find_references(server, path, line, character):
 
 
 def test_tvm_dialect():
-    # tested on git tag e69bd1284b50630df570b3a5779a801982203756
-    tvm_path = os.path.join(curr_path, "..", "..", "..", "tvm")
+    def test_dummy_repo():
+        # test and verify against dummy repo
+        tvm_path = os.path.join(curr_path, "..",  "dummy_repo", "tvm")
+        server = langserver.BaseServer()
+        server.m_initialize(rootUri=langserver.path2uri(tvm_path))
 
-    if not os.path.exists(tvm_path):
-        logging.info("Skip tvm tests")
-        return
+        res = run_find_definition(server,
+                                  os.path.join(tvm_path, "python/tvm/relay/expr.py"),
+                                  15, 14)
+        assert(len(res) == 1)
+        assert(res[0]['uri'].endswith("expr.h"))
+        assert(res[0]['range']['start']['line'] == 33)
 
-    server = langserver.BaseServer()
-    server.m_initialize(rootUri=langserver.path2uri(tvm_path))
+        # res = run_find_definition(server,
+        #                           os.path.join(tvm_path, "python/tvm/stmt.py"),
+        #                           26, 30)
+        # assert(len(res) == 1)
+        # assert(res[0]['uri'].endswith("api_ir.cc"))
+        # assert(res[0]['range']['start']['line'] == 14)
 
-    run_find_references(server,
-                        join_path(tvm_path, "include/tvm/expr.h"),
-                        119, 49)
+        # res = run_find_references(server,
+        #                           os.path.join(tvm_path, "include/tvm/expr.h"),
+        #                           15, 49)
+        # assert(len(res) == 2)
+        # assert(res[1]['uri'].endswith("expr.py"))
+        # assert(res[1]['range']['start']['line'] == 15)
 
-    run_find_references(server,
-                        join_path(tvm_path, "python/tvm/api.py"),
-                        58, 33)
+        # res = run_find_references(server,
+        #                           os.path.join(tvm_path, "python/tvm/api.py"),
+        #                           24, 33)
+        # assert(len(res) == 2)
+        # assert(res[0]['uri'].endswith("api_lang.cc"))
+        # assert(res[0]['range']['start']['line'] == 15)
 
-    run_find_definition(server,
-                        join_path(tvm_path, "python/tvm/relay/expr.py"),
-                        177, 14)
+    def test_real_repo():
+        # tested on tvm git tag e69bd1284b50630df570b3a5779a801982203756
+        tvm_path = os.path.join(curr_path, "..", "..", "..", "tvm")
+        if not os.path.exists(tvm_path):
+            logging.info("Skip tvm tests")
+            return
 
-    run_find_references(server,
-                        join_path(tvm_path, "src/relay/ir/expr.cc"),
-                        39, 33)
+        server = langserver.BaseServer()
+        server.m_initialize(rootUri=langserver.path2uri(tvm_path))
 
-    run_find_definition(server,
-                        join_path(tvm_path, "python/tvm/stmt.py"),
-                        96, 34)
+        run_find_references(server,
+                            join_path(tvm_path, "include/tvm/expr.h"),
+                            119, 49)
 
-    run_find_references(server,
-                        join_path(tvm_path, "python/tvm/stmt.py"),
-                        96, 34)
+        run_find_references(server,
+                            join_path(tvm_path, "python/tvm/api.py"),
+                            58, 33)
 
-    run_find_definition(server,
-                        join_path(tvm_path, "python/tvm/stmt.py"),
-                        56, 18)
+        run_find_definition(server,
+                            join_path(tvm_path, "python/tvm/relay/expr.py"),
+                            177, 14)
 
-    run_find_references(server,
-                        join_path(tvm_path, "python/tvm/stmt.py"),
-                        56, 18)
+        run_find_references(server,
+                            join_path(tvm_path, "src/relay/ir/expr.cc"),
+                            39, 33)
 
-    run_find_definition(server,
-                        join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
-                        730, 59)
+        run_find_definition(server,
+                            join_path(tvm_path, "python/tvm/stmt.py"),
+                            96, 34)
 
-    run_find_references(server,
-                        join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
-                        730, 59)
+        run_find_references(server,
+                            join_path(tvm_path, "python/tvm/stmt.py"),
+                            96, 34)
 
+        run_find_definition(server,
+                            join_path(tvm_path, "python/tvm/stmt.py"),
+                            56, 18)
+
+        run_find_references(server,
+                            join_path(tvm_path, "python/tvm/stmt.py"),
+                            56, 18)
+
+        run_find_definition(server,
+                            join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
+                            730, 59)
+
+        run_find_references(server,
+                            join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
+                            730, 59)
+
+    test_dummy_repo()
+    test_real_repo()
 
 def test_torch_dialect():
     pytorch_path = os.path.join(curr_path, "..", "dummy_repo", "pytorch")
