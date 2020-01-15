@@ -14,6 +14,7 @@ namespace ir {
 
 REGISTER_MAKE(ProducerConsumer);
 REGISTER_MAKE(LetStmt);
+REGISTER_MAKE(Provide);
 
 } // namespace ir
 }

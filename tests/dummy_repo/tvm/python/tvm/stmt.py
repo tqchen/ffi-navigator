@@ -45,3 +45,25 @@ class LetStmt(Stmt):
     def __init__(self, var, value, body):
         self.__init_handle_by_constructor__(
             _make.LetStmt, var, value, body)
+
+
+class Provide(Stmt):
+    """Provide node.
+
+    Parameters
+    ----------
+    func : Operation
+        The operation to create the function.
+
+    value_index : int
+        The output value index
+
+    value : Expr
+        The value to be stored.
+
+    args : list of Expr
+        The index arguments of the Provide.
+    """
+    def __init__(self, func, value_index, value, args):
+        self.__init_handle_by_constructor__(
+            _make.Provide, func, value_index, value, args)

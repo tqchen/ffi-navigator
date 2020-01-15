@@ -1,5 +1,5 @@
 from ffi_navigator import langserver
-from ffi_navigator.util import join_path
+from ffi_navigator.util import join_path, normalize_path
 
 import logging
 import os
@@ -29,53 +29,53 @@ def test_tvm_dialect():
         server = langserver.BaseServer()
         server.m_initialize(rootUri=langserver.path2uri(tvm_path))
 
-        # # Constant
-        # res = run_find_definition(server,
-        #                           join_path(tvm_path, "python/tvm/relay/expr.py"),
-        #                           15, 14)
-        # assert(len(res) == 1)
-        # assert(res[0]['uri'].endswith("expr.h"))
-        # assert(res[0]['range']['start']['line'] == 33)
+        # Constant
+        res = run_find_definition(server,
+                                  join_path(tvm_path, "python/tvm/relay/expr.py"),
+                                  15, 14)
+        assert(len(res) == 1)
+        assert(res[0]['uri'].endswith("expr.h"))
+        assert(res[0]['range']['start']['line'] == 33)
 
-        # # _make.ProducerConsumer
-        # res = run_find_definition(server,
-        #                           join_path(tvm_path, "python/tvm/stmt.py"),
-        #                           26, 30)
-        # assert(len(res) == 1)
-        # assert(res[0]['uri'].endswith("api_ir.cc"))
-        # assert(res[0]['range']['start']['line'] == 14)
+        # _make.ProducerConsumer
+        res = run_find_definition(server,
+                                  join_path(tvm_path, "python/tvm/stmt.py"),
+                                  26, 30)
+        assert(len(res) == 1)
+        assert(res[0]['uri'].endswith("api_ir.cc"))
+        assert(res[0]['range']['start']['line'] == 14)
 
-        # # _make.LetStmt
-        # res = run_find_definition(server,
-        #                           join_path(tvm_path, "python/tvm/stmt.py"),
-        #                           46, 20)
-        # assert(len(res) == 1)
-        # assert(res[0]['uri'].endswith("api_ir.cc"))
-        # assert(res[0]['range']['start']['line'] == 15)
+        # _make.LetStmt
+        res = run_find_definition(server,
+                                  join_path(tvm_path, "python/tvm/stmt.py"),
+                                  46, 20)
+        assert(len(res) == 1)
+        assert(res[0]['uri'].endswith("api_ir.cc"))
+        assert(res[0]['range']['start']['line'] == 15)
 
-        # # Get("relay.backend.lower") from c++ to python
-        # res = run_find_definition(server,
-        #                           join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
-        #                           74, 59)
-        # assert(len(res) == 1)
-        # assert(res[0]['uri'].endswith("_backend.py"))
-        # assert(res[0]['range']['start']['line'] == 8)
+        # Get("relay.backend.lower") from c++ to python
+        res = run_find_definition(server,
+                                  join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
+                                  74, 59)
+        assert(len(res) == 1)
+        assert(res[0]['uri'].endswith("_backend.py"))
+        assert(res[0]['range']['start']['line'] == 8)
 
-        # # Variable
-        # res = run_find_references(server,
-        #                           join_path(tvm_path, "include/tvm/expr.h"),
-        #                           15, 49)
-        # assert(len(res) == 2)
-        # assert(res[1]['uri'].endswith("expr.py"))
-        # assert(res[1]['range']['start']['line'] == 15)
+        # Variable
+        res = run_find_references(server,
+                                  join_path(tvm_path, "include/tvm/expr.h"),
+                                  15, 49)
+        assert(len(res) == 2)
+        assert(res[1]['uri'].endswith("expr.py"))
+        assert(res[1]['range']['start']['line'] == 15)
 
-        # # TVM_REGISTER_GLOBAL("_min_value")
-        # res = run_find_references(server,
-        #                           join_path(tvm_path, "src/api/api_lang.cc"),
-        #                           15, 33)
-        # assert(len(res) == 2)
-        # assert(res[1]['uri'].endswith("api.py"))
-        # assert(res[1]['range']['start']['line'] == 24)
+        # TVM_REGISTER_GLOBAL("_min_value")
+        res = run_find_references(server,
+                                  join_path(tvm_path, "src/api/api_lang.cc"),
+                                  15, 33)
+        assert(len(res) == 2)
+        assert(res[1]['uri'].endswith("api.py"))
+        assert(res[1]['range']['start']['line'] == 24)
 
         # _make.Constant
         res = run_find_references(server,
@@ -85,39 +85,63 @@ def test_tvm_dialect():
         assert(res[1]['uri'].endswith("expr.py"))
         assert(res[1]['range']['start']['line'] == 24)
 
-        # # REGISTER_MAKE(ProducerConsumer)
-        # res = run_find_references(server,
-        #                           join_path(tvm_path, "src/api/api_ir.cc"),
-        #                           14, 25)
-        # assert(len(res) == 2)
-        # assert(res[1]['uri'].endswith("stmt.py"))
-        # assert(res[1]['range']['start']['line'] == 26)
+        # REGISTER_MAKE(ProducerConsumer)
+        res = run_find_references(server,
+                                  join_path(tvm_path, "src/api/api_ir.cc"),
+                                  14, 25)
+        assert(len(res) == 2)
+        assert(res[1]['uri'].endswith("stmt.py"))
+        assert(res[1]['range']['start']['line'] == 26)
 
-        # # REGISTER_MAKE(LetStmt)
-        # res = run_find_references(server,
-        #                           join_path(tvm_path, "src/api/api_ir.cc"),
-        #                           15, 18)
-        # assert(len(res) == 2)
-        # assert(res[1]['uri'].endswith("stmt.py"))
-        # assert(res[1]['range']['start']['line'] == 46)
+        # REGISTER_MAKE(LetStmt)
+        res = run_find_references(server,
+                                  join_path(tvm_path, "src/api/api_ir.cc"),
+                                  15, 18)
+        assert(len(res) == 2)
+        assert(res[1]['uri'].endswith("stmt.py"))
+        assert(res[1]['range']['start']['line'] == 46)
 
-        # # @register_func("relay.backend.lower")
-        # res = run_find_references(server,
-        #                           join_path(tvm_path, "python/tvm/relay/backend/_backend.py"),
-        #                     8, 30)
-        # assert(len(res) == 2)
-        # assert(res[1]['uri'].endswith("compile_engine.cc"))
-        # assert(res[1]['range']['start']['line'] == 74)
+        # @register_func("relay.backend.build")
+        res = run_find_references(server,
+                                  join_path(tvm_path, "python/tvm/relay/backend/_backend.py"),
+                            26, 30)
+        assert(len(res) == 3)
+        assert(res[1]['uri'].endswith("compile_engine.cc"))
+        assert(res[1]['range']['start']['line'] == 90)
+        assert(res[2]['uri'].endswith("interpreter.cc"))
+        assert(res[2]['range']['start']['line'] == 115)
 
-        # # @register_func("relay.backend.build")
-        # res = run_find_references(server,
-        #                           join_path(tvm_path, "python/tvm/relay/backend/_backend.py"),
-        #                     26, 30)
-        # assert(len(res) == 3)
-        # assert(res[1]['uri'].endswith("compile_engine.cc"))
-        # assert(res[1]['range']['start']['line'] == 90)
-        # assert(res[2]['uri'].endswith("interpreter.cc"))
-        # assert(res[2]['range']['start']['line'] == 115)
+        # _pass.Simplify(end - begin)
+        res = run_find_references(server,
+                                  join_path(tvm_path, "python/tvm/ir_builder.py"),
+                                  20, 48)
+        assert(len(res) == 6)
+        assert(res[0]['uri'].endswith("api_pass.cc"))
+        assert(res[0]['range']['start']['line'] == 10)
+        assert(res[1]['uri'].endswith(normalize_path("autotvm/util.py")))
+        assert(res[1]['range']['start']['line'] == 26)
+        assert(res[2]['uri'].endswith(normalize_path("autotvm/util.py")))
+        assert(res[2]['range']['start']['line'] == 50)
+        assert(res[3]['uri'].endswith("build_module.py"))
+        assert(res[3]['range']['start']['line'] == 98)
+        assert(res[4]['uri'].endswith(normalize_path("hybrid/parser.py")))
+        assert(res[4]['range']['start']['line'] == 43)
+
+        # REGISTER_MAKE(Provide);
+        res = run_find_references(server,
+                                  join_path(tvm_path, "src/api/api_ir.cc"),
+                                  16, 15)
+        assert(len(res) == 6)
+        assert(res[1]['uri'].endswith(normalize_path("hybrid/parser.py")))
+        assert(res[1]['range']['start']['line'] == 75)
+        assert(res[2]['uri'].endswith(normalize_path("hybrid/parser.py")))
+        assert(res[2]['range']['start']['line'] == 81)
+        assert(res[3]['uri'].endswith(normalize_path("hybrid/parser.py")))
+        assert(res[3]['range']['start']['line'] == 97)
+        assert(res[4]['uri'].endswith(normalize_path("hybrid/util.py")))
+        assert(res[4]['range']['start']['line'] == 20)
+        assert(res[5]['uri'].endswith("stmt.py"))
+        assert(res[5]['range']['start']['line'] == 68)
 
     def test_real_repo():
         # tested on tvm git tag e69bd1284b50630df570b3a5779a801982203756
@@ -129,48 +153,66 @@ def test_tvm_dialect():
         server = langserver.BaseServer()
         server.m_initialize(rootUri=langserver.path2uri(tvm_path))
 
-        # run_find_references(server,
-        #                     join_path(tvm_path, "include/tvm/expr.h"),
-        #                     119, 49)
+        run_find_references(server,
+                            join_path(tvm_path, "include/tvm/expr.h"),
+                            119, 49)
 
-        # run_find_references(server,
-        #                     join_path(tvm_path, "python/tvm/api.py"),
-        #                     58, 33)
+        run_find_references(server,
+                            join_path(tvm_path, "python/tvm/api.py"),
+                            58, 33)
 
-        # run_find_definition(server,
-        #                     join_path(tvm_path, "python/tvm/relay/expr.py"),
-        #                     177, 14)
+        run_find_definition(server,
+                            join_path(tvm_path, "python/tvm/relay/expr.py"),
+                            177, 14)
 
         run_find_references(server,
                             join_path(tvm_path, "src/relay/ir/expr.cc"),
                             39, 33)
 
-        # run_find_definition(server,
-        #                     join_path(tvm_path, "python/tvm/stmt.py"),
-        #                     96, 34)
+        run_find_definition(server,
+                            join_path(tvm_path, "python/tvm/stmt.py"),
+                            96, 34)
 
-        # run_find_references(server,
-        #                     join_path(tvm_path, "python/tvm/stmt.py"),
-        #                     96, 34)
+        run_find_references(server,
+                            join_path(tvm_path, "python/tvm/stmt.py"),
+                            96, 34)
 
-        # run_find_definition(server,
-        #                     join_path(tvm_path, "python/tvm/stmt.py"),
-        #                     56, 18)
+        run_find_definition(server,
+                            join_path(tvm_path, "python/tvm/stmt.py"),
+                            56, 18)
 
-        # run_find_references(server,
-        #                     join_path(tvm_path, "python/tvm/stmt.py"),
-        #                     56, 18)
+        run_find_references(server,
+                            join_path(tvm_path, "python/tvm/stmt.py"),
+                            56, 18)
 
-        # run_find_definition(server,
-        #                     join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
-        #                     730, 59)
+        run_find_definition(server,
+                            join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
+                            730, 59)
 
-        # run_find_references(server,
-        #                     join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
-        #                     730, 59)
+        run_find_references(server,
+                            join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
+                            730, 59)
+
+        # TVM_REGISTER_API("ir_pass.Simplify")
+        res = run_find_references(server,
+                                  join_path(tvm_path, "src/api/api_pass.cc"),
+                                  33, 30)
+        assert(len(res) == 6)
+
+        # _pass.Simplify(end - begin)
+        res = run_find_references(server,
+                                  join_path(tvm_path, "python/tvm/ir_builder.py"),
+                                  214, 48)
+        assert(len(res) == 6)
+
+        # REGISTER_MAKE(Provide);
+        res = run_find_references(server,
+                                  join_path(tvm_path, "src/api/api_ir.cc"),
+                                  156, 15)
+        assert(len(res) == 6)
 
     test_dummy_repo()
-    # test_real_repo()
+    test_real_repo()
 
 def test_torch_dialect():
     pytorch_path = os.path.join(curr_path, "..", "dummy_repo", "pytorch")
@@ -239,6 +281,6 @@ if __name__ == "__main__":
     # eyeballing test script
     logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
     test_tvm_dialect()
-    # test_torch_dialect()
-    # test_mxnet_dialect()
-    # test_dgl_dialect()
+    test_torch_dialect()
+    test_mxnet_dialect()
+    test_dgl_dialect()
