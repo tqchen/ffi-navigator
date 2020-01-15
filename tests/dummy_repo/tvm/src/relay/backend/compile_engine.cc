@@ -83,6 +83,20 @@ class CompileEngineImpl : public CompileEngineNode {
     value->cached_func = CachedFunc(cache_node);
     return value;
   }
+
+  PackedFunc JIT(const CCacheKey& key) final {
+    CCacheValue value = LowerInternal(key);
+    if (value->packed_func != nullptr) return value->packed_func;
+    // build the function.
+    if (const auto* f = runtime::Registry::Get("relay.backend.build")) {
+      tvm::runtime::Module m = (*f)(value->cached_func->funcs, key->target);
+      value->packed_func = m.GetFunction(value->cached_func->func_name);
+    } else {
+      LOG(FATAL) << "relay.backend.build is not registered";
+    }
+    return value->packed_func;
+  }
+
 };
 }  // namespace relay
 }  // namespace tvm

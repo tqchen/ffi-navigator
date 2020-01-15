@@ -22,3 +22,10 @@ def lower(sch, inputs, func_name, source_func):
         raise RuntimeError(msg)
     return f if isinstance(
         f, (_container.Array, tuple, list)) else [f]
+
+
+@register_func("relay.backend.build")
+def build(funcs, target, target_host=None):
+    if target_host == "":
+        target_host = None
+    return _build.build(funcs, target=target, target_host=target_host)
