@@ -69,13 +69,13 @@ def test_tvm_dialect():
         assert(res[1]['uri'].endswith("expr.py"))
         assert(res[1]['range']['start']['line'] == 15)
 
-        # _api_internal._min_value
+        # TVM_REGISTER_GLOBAL("_min_value")
         res = run_find_references(server,
-                                  join_path(tvm_path, "python/tvm/api.py"),
-                                  24, 33)
+                                  join_path(tvm_path, "src/api/api_lang.cc"),
+                                  15, 33)
         assert(len(res) == 2)
-        assert(res[0]['uri'].endswith("api_lang.cc"))
-        assert(res[0]['range']['start']['line'] == 15)
+        assert(res[1]['uri'].endswith("api.py"))
+        assert(res[1]['range']['start']['line'] == 24)
 
         # # _make.Constant
         # res = run_find_references(server,
@@ -85,20 +85,21 @@ def test_tvm_dialect():
         # assert(res[0]['uri'].endswith("expr.py"))
         # assert(res[0]['range']['start']['line'] == 24)
 
+        # REGISTER_MAKE(ProducerConsumer)
         res = run_find_references(server,
-                                  join_path(tvm_path, "python/tvm/stmt.py"),
-                                  26, 34)
+                                  join_path(tvm_path, "src/api/api_ir.cc"),
+                                  14, 25)
         assert(len(res) == 2)
-        assert(res[0]['uri'].endswith("api_ir.cc"))
-        assert(res[0]['range']['start']['line'] == 14)
+        assert(res[1]['uri'].endswith("stmt.py"))
+        assert(res[1]['range']['start']['line'] == 26)
 
-        # _make.LetStmt
+        # REGISTER_MAKE(LetStmt)
         res = run_find_references(server,
-                                  join_path(tvm_path, "python/tvm/stmt.py"),
-                                  46, 18)
+                                  join_path(tvm_path, "src/api/api_ir.cc"),
+                                  15, 18)
         assert(len(res) == 2)
-        assert(res[0]['uri'].endswith("api_ir.cc"))
-        assert(res[0]['range']['start']['line'] == 15)
+        assert(res[1]['uri'].endswith("stmt.py"))
+        assert(res[1]['range']['start']['line'] == 46)
 
         # @register_func("relay.backend.lower")
         res = run_find_references(server,
