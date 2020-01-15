@@ -61,6 +61,22 @@ def test_tvm_dialect():
         assert(res[0]['uri'].endswith("_backend.py"))
         assert(res[0]['range']['start']['line'] == 8)
 
+        # Variable
+        res = run_find_references(server,
+                                  join_path(tvm_path, "include/tvm/expr.h"),
+                                  15, 49)
+        assert(len(res) == 2)
+        assert(res[1]['uri'].endswith("expr.py"))
+        assert(res[1]['range']['start']['line'] == 15)
+
+        # _api_internal._min_value
+        res = run_find_references(server,
+                                  join_path(tvm_path, "python/tvm/api.py"),
+                                  24, 33)
+        assert(len(res) == 2)
+        assert(res[0]['uri'].endswith("api_lang.cc"))
+        assert(res[0]['range']['start']['line'] == 15)
+
     def test_real_repo():
         # tested on tvm git tag e69bd1284b50630df570b3a5779a801982203756
         tvm_path = os.path.join(curr_path, "..", "..", "..", "tvm")
