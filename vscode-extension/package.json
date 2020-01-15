@@ -19,7 +19,19 @@
 		"onLanguage:plaintext"
 	],
 	"main": "./out/extension",
-	"contributes": {},
+	"contributes": {
+		"configuration": {
+			"title": "FFINavigator",
+			"properties": {
+				"ffi_navigator.pythonpath": {
+					"type": "string",
+					"default": "python",
+					"scope": "machine-overridable",
+					"description": "Python path which installed the ffi language server, i.e. '/usr/bin/python'"
+				}
+			}
+		}
+	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -b",

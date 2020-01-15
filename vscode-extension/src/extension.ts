@@ -23,8 +23,8 @@ export function activate(context: ExtensionContext) {
                                 ' Please run "pip3 install ffi_navigator" and reload the window');
         return ;
     }
-
-    let pyCommand = 'python3'
+    const config = vscode.workspace.getConfiguration('')
+    let pyCommand = config.get("ffi_navigator.pythonpath")
     let args = ['-m', 'ffi_navigator.langserver']
     let commandOptions: ExecutableOptions = { stdio: 'pipe', detached: false };
     let serverOptions: ServerOptions = {
