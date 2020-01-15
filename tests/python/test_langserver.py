@@ -43,6 +43,21 @@ def test_tvm_dialect():
         assert(res[0]['uri'].endswith("api_ir.cc"))
         assert(res[0]['range']['start']['line'] == 14)
 
+        res = run_find_definition(server,
+                                  join_path(tvm_path, "python/tvm/stmt.py"),
+                                  46, 20)
+        assert(len(res) == 1)
+        assert(res[0]['uri'].endswith("api_ir.cc"))
+        assert(res[0]['range']['start']['line'] == 15)
+
+        # lookup relay.backend.lower from c++ to python
+        res = run_find_definition(server,
+                                  join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
+                                  74, 59)
+        assert(len(res) == 1)
+        assert(res[0]['uri'].endswith("_backend.py"))
+        assert(res[0]['range']['start']['line'] == 8)
+
         # res = run_find_references(server,
         #                           join_path(tvm_path, "include/tvm/expr.h"),
         #                           15, 49)
@@ -82,10 +97,10 @@ def test_tvm_dialect():
         # run_find_references(server,
         #                     join_path(tvm_path, "src/relay/ir/expr.cc"),
         #                     39, 33)
-        print("run find def")
-        run_find_definition(server,
-                            join_path(tvm_path, "python/tvm/stmt.py"),
-                            96, 34)
+        # print("run find def")
+        # run_find_definition(server,
+        #                     join_path(tvm_path, "python/tvm/stmt.py"),
+        #                     96, 34)
 
         # run_find_references(server,
         #                     join_path(tvm_path, "python/tvm/stmt.py"),
@@ -99,16 +114,16 @@ def test_tvm_dialect():
         #                     join_path(tvm_path, "python/tvm/stmt.py"),
         #                     56, 18)
 
-        # run_find_definition(server,
-        #                     join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
-        #                     730, 59)
+        run_find_definition(server,
+                            join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
+                            727, 59)
 
         # run_find_references(server,
         #                     join_path(tvm_path, "src/relay/backend/compile_engine.cc"),
-        #                     730, 59)
+        #                     727, 59)
 
     test_dummy_repo()
-    #test_real_repo()
+    # test_real_repo()
 
 def test_torch_dialect():
     pytorch_path = os.path.join(curr_path, "..", "dummy_repo", "pytorch")

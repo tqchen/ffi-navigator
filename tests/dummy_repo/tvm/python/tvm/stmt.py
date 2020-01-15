@@ -25,3 +25,23 @@ class ProducerConsumer(Stmt):
     def __init__(self, func, is_producer, body):
         self.__init_handle_by_constructor__(
             _make.ProducerConsumer, func, is_producer, body)
+
+
+@register_node
+class LetStmt(Stmt):
+    """LetStmt node.
+
+    Parameters
+    ----------
+    var : Var
+        The variable in the binding.
+
+    value : Expr
+        The value in to be binded.
+
+    body : Stmt
+        The body statement.
+    """
+    def __init__(self, var, value, body):
+        self.__init_handle_by_constructor__(
+            _make.LetStmt, var, value, body)

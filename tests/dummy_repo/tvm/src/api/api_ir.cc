@@ -13,6 +13,7 @@ namespace ir {
   .set_body_typed(Node::make);
 
 REGISTER_MAKE(ProducerConsumer);
+REGISTER_MAKE(LetStmt);
 
 } // namespace ir
 }
