@@ -2,6 +2,8 @@
 import os
 from .. import pattern
 from .base_provider import BaseProvider
+from ..util import normalize_path
+
 
 class DGLProvider(BaseProvider):
     """Provider for DGL FFI.
@@ -82,7 +84,7 @@ class DGLProvider(BaseProvider):
         return results
 
     def init_pass(self, path, source):
-        if path.endswith("python/dgl/__init__.py"):
+        if path.endswith(normalize_path("python/dgl/__init__.py")):
             super().init_pass(path, source)
             self._pypath_init = os.path.abspath(path[:-len(".py")])
             self._pypath_funcmod = os.path.join(self._pypath_root, "_ffi", "function")
