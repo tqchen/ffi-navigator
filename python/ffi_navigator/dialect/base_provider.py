@@ -1,6 +1,7 @@
 """Base class for providers"""
 import os
 from .. import pattern
+from ..util import normalize_path
 
 
 class BaseProvider(object):
@@ -31,7 +32,7 @@ class BaseProvider(object):
 
     def init_pass(self, path, source):
         """This function will be called for each file before extract."""
-        if path.endswith("%s/__init__.py" % self.dialect_name):
+        if path.endswith(normalize_path("%s/__init__.py" % self.dialect_name)):
             self._pypath_root = os.path.abspath(path[:-len("/__init__.py")])
             self.resolver.add_package(self.dialect_name, self._pypath_root)
             self.logger.info("%s: found python path %s", self.dialect_name, self._pypath_root)
