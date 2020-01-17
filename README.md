@@ -37,6 +37,13 @@ Add the following configuration
 If you use eglot instead, check out [this PR](https://github.com/tqchen/ffi-navigator/pull/1).
 eglot does not support multiple servers per language at the moment, the PR above contains a workaround.
 
+### Other editors/IDEs
+
+It should be straightforward to add support for other editors or IDEs that have a LSP client implementation.
+Please refer to this [site](https://langserver.org/) for the availability of clients.
+
+Since ffi-navigator is intended to be used with other general purpose servers such as [pyls](https://github.com/palantir/python-language-server), your LSP client needs to be able to talk to multiple servers per language. If your client does not have such feature, check out [this PR](https://github.com/tqchen/ffi-navigator/pull/1) and the discussion there for a workaround. This [branch](https://github.com/masahi/tvm-ffi-navigator/tree/pyls-fallback) has fallback to pyls and it is always kept up to date with the master branch.
+
 
 ## Features
 
