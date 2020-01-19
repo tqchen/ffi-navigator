@@ -15,16 +15,16 @@ import {
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
+    const config = workspace.getConfiguration('')
+    let pyCommand = config.get("ffi_navigator.pythonpath", "python")
     // Check if the Python package is installed.
     try {
-        execSync("pip3 show ffi_navigator");
+        execSync(`${pyCommand} -m pip show ffi_navigator`);
     } catch (error) {
         window.showErrorMessage('ffi_navigator is not installed.' +
                                 ' Please run "pip3 install ffi_navigator" and reload the window');
         return ;
     }
-    const config = workspace.getConfiguration('')
-    let pyCommand = config.get("ffi_navigator.pythonpath", "python")
     let args = ['-m', 'ffi_navigator.langserver']
     let commandOptions: ExecutableOptions = { stdio: 'pipe', detached: false };
     let serverOptions: ServerOptions = {
