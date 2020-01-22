@@ -250,6 +250,14 @@ def test_torch_dialect():
     assert(res[0]['uri'].endswith("python_torch_functions.cpp"))
     assert(res[0]['range']['start']['line'] == 2)
 
+    # module._c._create_method_from_trace
+    res = run_find_definition(server,
+                              join_path(pytorch_path, "torch/jit/__init__.py"),
+                              74, 30)
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("init.cpp"))
+    assert(res[0]['range']['start']['line'] == 125)
+
 
 def test_mxnet_dialect():
     mx_path = os.path.join(curr_path, "..", "dummy_repo", "mxnet")

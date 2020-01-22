@@ -73,6 +73,14 @@ class TorchProvider(BaseProvider):
                         path=path, range=rg),
             use_search=True)
 
+        # module._c._create_method_from_trace
+        self.py_wrapped_method = pattern.re_matcher(
+            r"[A-Za-z0-9|_]+\._c\.(?P<key>[A-Za-z0-9|_|]+)",
+            lambda match, path, rg:
+            pattern.Ref(key=match.group("key"),
+                        path=path, range=rg),
+            use_search=True)
+
     def get_additional_scan_dirs(self, root_path):
         return [
             os.path.join(root_path, "aten", "src", "ATen"),
@@ -96,6 +104,7 @@ class TorchProvider(BaseProvider):
     def _py_extract(self, path, source, begin, end):
         results = self.py_ops(path, source, begin, end)
         results += self.py_wrapped(path, source, begin, end)
+        results += self.py_wrapped_method(path, source, begin, end)
         return results
 
     def extract(self, path, source, begin=0, end=None):

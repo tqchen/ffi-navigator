@@ -120,4 +120,27 @@ void initJitScriptBindings(PyObject* module) {
     const auto self = SimpleSelf(classType);
     cu->define(classname, methodDefs, rcbs, &self);
   });
+
+  py::class_<Module, Object>(m, "ScriptModule")
+      .def(py::init<std::string, std::shared_ptr<CompilationUnit>, bool>())
+      .def(
+          "_create_method_from_trace",
+          [](Module& self,
+             const std::string& name,
+             py::function func,
+             py::tuple input_tuple,
+             py::function var_lookup_fn,
+             bool force_outplace) {
+            // prereq: Module's buffers and parameters are unique
+            // this was ensured in python before calling this function
+            auto typed_inputs = toTraceableStack(input_tuple);
+
+            std::shared_ptr<Graph> graph = std::get<0>(tracer::createGraphByTracing(
+                func, typed_inputs, var_lookup_fn, force_outplace, &self));
+            const auto method_name = QualifiedName(*self.type()->name(), name);
+            auto fn = self._ivalue()->compilation_unit()->create_function(
+                method_name, graph);
+            self.type()->addMethod(fn);
+            didFinishEmitModule(self);
+          });
 }
