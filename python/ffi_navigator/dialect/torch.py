@@ -104,7 +104,9 @@ class TorchProvider(BaseProvider):
         results = self.c10_reg(path, source, begin, end)
         results += self.cpp_pybind_func(path, source)
         results += self.cpp_pybind_class(path, source)
-        results += self.cpp_py_method_def(path, source, begin, end)
+
+        if "PyMethodDef" in "".join(source):
+            results += self.cpp_py_method_def(path, source, begin, end)
 
         return results
 
