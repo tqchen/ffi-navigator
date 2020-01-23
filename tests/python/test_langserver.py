@@ -336,7 +336,7 @@ def test_dgl_dialect():
 if __name__ == "__main__":
     # eyeballing test script
     logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
-    # test_tvm_dialect()
+    test_tvm_dialect()
     test_torch_dialect()
-    # test_mxnet_dialect()
-    # test_dgl_dialect()
+    test_mxnet_dialect()
+    test_dgl_dialect()
