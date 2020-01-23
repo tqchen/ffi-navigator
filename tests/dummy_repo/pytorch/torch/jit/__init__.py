@@ -40,19 +40,6 @@ def trace_module(mod,
                  _force_outplace=False,
                  _module_class=None,
                  _compilation_unit=_python_cu):
-    if not _enabled:
-        return mod
-    if optimize is not None:
-        warnings.warn("`optimize` is deprecated and has no effect. Use `with torch.jit.optimized_execution() instead")
-
-    var_lookup_fn = _create_interpreter_name_lookup_fn(0)
-
-    if not isinstance(mod, torch.nn.Module):
-        raise AttributeError("expected torch.nn.Module as the first argument")
-
-    if not isinstance(inputs, dict):
-        raise AttributeError("expected a dictionary of (method_name, input) pairs")
-
     old_module_map = torch.jit._trace_module_map
     try:
         torch.jit._trace_module_map = {}
@@ -87,3 +74,38 @@ def trace_module(mod,
         torch.jit._trace_module_map = old_module_map
 
     return module
+
+
+class RecursiveScriptModule(ScriptModule):
+    _disable_script_meta = True
+
+    def __init__(self, cpp_module):
+        self.__dict__['_initializing'] = True
+        self._c = cpp_module
+        super(RecursiveScriptModule, self).__init__()
+        delattr(self, 'training')
+
+    def save(self, *args, **kwargs):
+        return self._c.save(*args, **kwargs)
+
+    def save_to_buffer(self, *args, **kwargs):
+        return self._c.save_to_buffer(*args, **kwargs)
+
+    def get_debug_state(self, *args, **kwargs):
+        return self._c.get_debug_state()
+
+    def define(self, src):
+        rcb = _jit_internal.createResolutionCallbackFromFrame(frames_up=1)
+        self._c._define(self._concrete_type, src, rcb)
+
+    def __getattr__(self, attr):
+        if attr in self._modules:
+            return self._modules[attr]
+        elif self._c.hasattr(attr):
+            return self._c.getattr(attr)
+        elif self._c._has_method(attr):
+            script_method = self._c._get_method(attr)
+            self.__dict__[attr] = script_method
+            return script_method
+
+        return super(RecursiveScriptModule, self).__getattr__(attr)

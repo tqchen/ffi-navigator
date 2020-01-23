@@ -221,6 +221,7 @@ def test_torch_dialect():
     uri = langserver.path2uri(pytorch_path)
     server.m_initialize(rootUri=uri)
 
+    # ops.quantized.conv2d
     res = run_find_definition(server,
                               join_path(pytorch_path, "torch/nn/quantized/modules/conv.py"),
                               38, 28)
@@ -228,13 +229,15 @@ def test_torch_dialect():
     assert(res[0]['uri'].endswith("qconv.cpp"))
     assert(res[0]['range']['start']['line'] == 2)
 
+    # torch._C._jit_script_class_compile
     res = run_find_definition(server,
                               join_path(pytorch_path, "torch/jit/__init__.py"),
                               20, 50)
     assert(len(res) > 0)
     assert(res[0]['uri'].endswith("init.cpp"))
-    assert(res[0]['range']['start']['line'] == 95)
+    assert(res[0]['range']['start']['line'] == 126)
 
+    # torch._C.CompilationUnit()
     res = run_find_definition(server,
                               join_path(pytorch_path, "torch/jit/__init__.py"),
                               25, 30)
@@ -243,6 +246,7 @@ def test_torch_dialect():
     assert(res[0]['range']['start']['line'] == 1)
     assert(res[0]['range']['end']['character'] == 27)
 
+    # torch.conv2d
     res = run_find_definition(server,
                               join_path(pytorch_path, "torch/nn/functional.py"),
                               16, 30)
@@ -253,10 +257,28 @@ def test_torch_dialect():
     # module._c._create_method_from_trace
     res = run_find_definition(server,
                               join_path(pytorch_path, "torch/jit/__init__.py"),
-                              74, 30)
+                              61, 30)
     assert(len(res) > 0)
     assert(res[0]['uri'].endswith("init.cpp"))
-    assert(res[0]['range']['start']['line'] == 125)
+    assert(res[0]['range']['start']['line'] == 105)
+
+    # self._c._get_method(attr)
+    res = run_find_definition(server,
+                              join_path(pytorch_path, "torch/jit/__init__.py"),
+                              106, 30)
+
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("init.cpp"))
+    assert(res[0]['range']['start']['line'] == 21)
+
+    # self._c._define(self._concrete_type, src, rcb)
+    res = run_find_definition(server,
+                              join_path(pytorch_path, "torch/jit/__init__.py"),
+                              98, 18)
+
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("init.cpp"))
+    assert(res[0]['range']['start']['line'] == 94)
 
 
 def test_mxnet_dialect():
@@ -288,7 +310,7 @@ def test_dgl_dialect():
 if __name__ == "__main__":
     # eyeballing test script
     logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
-    test_tvm_dialect()
+    # test_tvm_dialect()
     test_torch_dialect()
-    test_mxnet_dialect()
-    test_dgl_dialect()
+    # test_mxnet_dialect()
+    # test_dgl_dialect()
