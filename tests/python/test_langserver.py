@@ -280,6 +280,32 @@ def test_torch_dialect():
     assert(res[0]['uri'].endswith("init.cpp"))
     assert(res[0]['range']['start']['line'] == 94)
 
+    # Variable._execution_engine.run_backward
+    res = run_find_definition(server,
+                              join_path(pytorch_path, "torch/autograd/__init__.py"),
+                              24, 40)
+
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("python_engine.cpp"))
+    assert(res[0]['range']['start']['line'] == 13)
+
+    # _C._FunctionBase._do_forward
+    res = run_find_definition(server,
+                              join_path(pytorch_path, "torch/autograd/function.py"),
+                              5, 40)
+
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("python_function.cpp"))
+    assert(res[0]['range']['start']['line'] == 11)
+
+    # torch._C._get_qengine()
+    res = run_find_definition(server,
+                              join_path(pytorch_path, "torch/backends/quantized/__init__.py"),
+                              6, 45)
+
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("Module.cpp"))
+    assert(res[0]['range']['start']['line'] == 46)
 
 def test_mxnet_dialect():
     mx_path = os.path.join(curr_path, "..", "dummy_repo", "mxnet")
