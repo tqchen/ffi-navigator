@@ -39,7 +39,8 @@ class TVMProvider(BaseProvider):
             lambda key, path, rg, _:
             pattern.Ref(key=key, path=path, range=rg))
         self.py_init_api = pattern.macro_matcher(
-            ["_init_api"], lambda key, path, *_: self._wrap_py_init_api(key, path))
+            ["tvm._ffi._init_api", "_init_api"],
+            lambda key, path, _, reg: self._wrap_py_init_api(key, path, reg))
         self.py_reg_object = pattern.decorator_matcher(
             ["register_object", "register_node", "register_relay_node"], "class",
             lambda key, path, rg, reg:
@@ -47,7 +48,7 @@ class TVMProvider(BaseProvider):
             if reg.endswith("relay_node")
             else pattern.Ref(key="t:"+key, path=path, range=rg))
         self.py_reg_func = pattern.decorator_matcher(
-            ["register_func"], "def",
+            ["register_func", "tvm._ffi.register_func"], "def",
             lambda key, path, rg, reg: self._wrap_py_reg_func(key, path, rg, reg))
 
         self._pypath_api_internal = None
@@ -55,16 +56,19 @@ class TVMProvider(BaseProvider):
         self._pypath_init = None
 
     def _wrap_py_reg_func(self, key, path, rg, reg):
-        new_mod, new_name = self.resolver.resolve(path, reg)
-        if (new_mod not in (self._pypath_funcmod, self._pypath_init)
-            or new_name != "register_func"):
-            return None
+        if reg != "tvm._ffi.register_func":
+            new_mod, new_name = self.resolver.resolve(path, reg)
+            if (new_mod not in (self._pypath_funcmod, self._pypath_init)
+                or new_name != "register_func"):
+                return None
         return pattern.Def(key=key, path=path, range=rg)
 
-    def _wrap_py_init_api(self, key, path):
-        new_mod, new_name = self.resolver.resolve(path, "_init_api")
-        if new_mod != self._pypath_funcmod or new_name != "_init_api":
-            return None
+    def _wrap_py_init_api(self, key, path, reg):
+        if reg != "tvm._ffi._init_api":
+            # legacy behavior
+            new_mod, new_name = self.resolver.resolve(path, "_init_api")
+            if new_mod != self._pypath_funcmod or new_name != "_init_api":
+                return None
         prefix = key[4:] if key.startswith("tvm.") else key
         fkey2var = lambda k : k[len(prefix) + 1:]
         fvar2key = lambda v : prefix + "." + v
