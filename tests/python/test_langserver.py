@@ -333,6 +333,37 @@ def test_dgl_dialect():
     # assert(len(res) > 0)
 
 
+def test_taichi_dialect():
+    ti_path = os.path.join(curr_path, "..", "dummy_repo", "taichi")
+    server = langserver.BaseServer()
+    uri = langserver.path2uri(ti_path)
+    server.m_initialize(rootUri=uri)
+
+    # ti.core.global_var_expr_from_snode
+    res = run_find_definition(server,
+                              join_path(ti_path, "python/taichi/lang/snode.py"),
+                              4, 40)
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("python_bindings.cpp"))
+    assert(res[0]['range']['start']['line'] == 8)
+
+    # taichi_lang_core.create_kernel
+    res = run_find_definition(server,
+                              join_path(ti_path, "python/taichi/lang/kernel.py"),
+                              74, 40)
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("python_bindings.cpp"))
+    assert(res[0]['range']['start']['line'] == 11)
+
+    # tc_core.Array2DVector4
+    res = run_find_definition(server,
+                              join_path(ti_path, "python/taichi/misc/util.py"),
+                              34, 40)
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("export_math.cpp"))
+    assert(res[0]['range']['start']['line'] == 12)
+
+
 if __name__ == "__main__":
     # eyeballing test script
     logging.basicConfig(level=logging.INFO, format="[%(asctime)-15s] %(message)s")
@@ -340,3 +371,4 @@ if __name__ == "__main__":
     test_torch_dialect()
     test_mxnet_dialect()
     test_dgl_dialect()
+    test_taichi_dialect()

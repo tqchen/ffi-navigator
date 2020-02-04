@@ -4,6 +4,7 @@ from .tvm import TVMProvider
 from .dgl import DGLProvider
 from .mxnet import MXNetProvider
 from .torch import TorchProvider
+from .taichi import TaichiProvider
 
 
 def autodetect_dialects(root_path, resolver, logger):
@@ -33,4 +34,6 @@ def autodetect_dialects(root_path, resolver, logger):
         dialects.append(TorchProvider(resolver, logger))
     elif os.path.exists(os.path.join(root_path, "python", "dgl")):
         dialects.append(DGLProvider(resolver, logger))
+    elif os.path.exists(os.path.join(root_path, "python", "taichi")):
+        dialects.append(TaichiProvider(resolver, logger))
     return dialects
