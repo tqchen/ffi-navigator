@@ -3,10 +3,10 @@ from __future__ import absolute_import
 
 from ... import build_module as _build
 from ... import container as _container
-from ..._ffi.function import _init_api, register_func
+import tvm._ffi
 
 
-@register_func("relay.backend.lower")
+@tvm._ffi.register_func("relay.backend.lower")
 def lower(sch, inputs, func_name, source_func):
     import traceback
     # pylint: disable=broad-except
@@ -24,7 +24,7 @@ def lower(sch, inputs, func_name, source_func):
         f, (_container.Array, tuple, list)) else [f]
 
 
-@register_func("relay.backend.build")
+@tvm._ffi.register_func("relay.backend.build")
 def build(funcs, target, target_host=None):
     if target_host == "":
         target_host = None
