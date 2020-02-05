@@ -13,4 +13,6 @@ void export_lang(py::module &m) {
         [&](std::string name, bool grad) -> Program::KernelProxy {
           return get_current_program().kernel(name, grad);
         });
+  m.def("get_current_program", get_current_program,
+        py::return_value_policy::reference);
 }
