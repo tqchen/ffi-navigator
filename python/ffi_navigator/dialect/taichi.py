@@ -21,7 +21,7 @@ class TaichiProvider(BaseProvider):
         # ti.core.global_var_expr_from_snode
         # taichi_lang_core.expr_add, taichi_lang_core.create_kernel
         # tc_core.Array2DVector4
-        self.py_ti_core = pattern.re_matcher(r"[\.|_]core\.(?P<key>[A-Za-z0-9_]+)",
+        self.py_ti_core = pattern.re_matcher(r"[\.|_]?core\.(?P<key>[A-Za-z0-9_]+)",
                                              lambda match, path, rg:
                                              pattern.Ref(key=match.group("key"), path=path, range=rg),
                                              use_search=True)

@@ -363,6 +363,14 @@ def test_taichi_dialect():
     assert(res[0]['uri'].endswith("export_math.cpp"))
     assert(res[0]['range']['start']['line'] == 12)
 
+    # core.get_current_program()
+    res = run_find_definition(server,
+                              join_path(ti_path, "python/taichi/lang/__init__.py"),
+                              10, 30)
+    assert(len(res) > 0)
+    assert(res[0]['uri'].endswith("python_bindings.cpp"))
+    assert(res[0]['range']['start']['line'] == 15)
+
 
 if __name__ == "__main__":
     # eyeballing test script
