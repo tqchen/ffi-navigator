@@ -134,6 +134,9 @@ class Workspace:
             if search_term:
                 search_map[mod_path] = search_term
 
+        for mod_path, var_name in mod_targets.items():
+            search_map[mod_path] = [var_name]
+
         # Step 3: search the related files
         results = []
         for mod_path, terms in search_map.items():
