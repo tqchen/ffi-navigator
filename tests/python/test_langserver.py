@@ -89,7 +89,7 @@ def test_tvm_dialect():
         res = run_find_references(server,
                                   join_path(tvm_path, "src/api/api_ir.cc"),
                                   14, 25)
-        assert(len(res) == 2)
+        assert(len(res) == 3)
         assert(res[1]['uri'].endswith("stmt.py"))
         assert(res[1]['range']['start']['line'] == 26)
 
@@ -154,8 +154,8 @@ def test_tvm_dialect():
         server.m_initialize(rootUri=langserver.path2uri(tvm_path))
 
         run_find_references(server,
-                            join_path(tvm_path, "include/tvm/expr.h"),
-                            119, 49)
+                            join_path(tvm_path, "src/runtime/module.cc"),
+                            198, 34)
 
         run_find_references(server,
                             join_path(tvm_path, "python/tvm/api.py"),
@@ -211,8 +211,9 @@ def test_tvm_dialect():
                                   156, 15)
         assert(len(res) == 6)
 
+    #test_real_repo()
     test_dummy_repo()
-    test_real_repo()
+
 
 def test_torch_dialect():
     pytorch_path = os.path.join(curr_path, "..", "dummy_repo", "pytorch")
