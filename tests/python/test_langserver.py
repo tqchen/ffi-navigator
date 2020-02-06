@@ -89,7 +89,7 @@ def test_tvm_dialect():
         res = run_find_references(server,
                                   join_path(tvm_path, "src/api/api_ir.cc"),
                                   14, 25)
-        assert(len(res) == 2)
+        assert(len(res) == 3)
         assert(res[1]['uri'].endswith("stmt.py"))
         assert(res[1]['range']['start']['line'] == 26)
 

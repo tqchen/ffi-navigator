@@ -9,5 +9,9 @@ You can use make function to build the IR node.
 from __future__ import absolute_import as _abs
 import tvm._ffi
 
+# test reference in the same file.
+def make_ProducerConsumer(is_prod, body):
+    return ProducerConsumer(is_prod, body)
+
 
 tvm._ffi._init_api("tvm.make")
