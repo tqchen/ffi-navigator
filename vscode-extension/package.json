@@ -4,7 +4,7 @@
 	"description": "FFI Navigator",
 	"author": "community contributors",
 	"license": "Apache-2.0",
-	"version": "0.2.0",
+	"version": "0.6.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/tqchen/ffi-navigator"
