@@ -3,10 +3,10 @@ from setuptools import find_packages
 
 setup(
     name = "ffi-navigator",
-    version = "0.4.1",
+    version = "0.5.2",
     license="Apache-2.0",
     description = "Language server for navigating FFI calls",
-    author = "tvm community",
+    author = "FFI navigator contributors",
     author_email = "tianqi.tchen@gmail.com",
     url = "https://github.com/tqchen/ffi-navigator",
     keywords = [],

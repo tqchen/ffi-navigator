@@ -2,7 +2,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License.
  * ------------------------------------------------------------------------------------------ */
-import { ExtensionContext, window } from 'vscode';
+import { ExtensionContext, window, workspace } from 'vscode';
 import { execSync } from 'child_process';
 
 import {
@@ -15,16 +15,16 @@ import {
 let client: LanguageClient;
 
 export function activate(context: ExtensionContext) {
+    const config = workspace.getConfiguration('')
+    let pyCommand = config.get("ffi_navigator.pythonpath", "python")
     // Check if the Python package is installed.
     try {
-        execSync("pip3 show ffi_navigator");
+        execSync(`${pyCommand} -m pip show ffi_navigator`);
     } catch (error) {
         window.showErrorMessage('ffi_navigator is not installed.' +
-                                ' Please run "pip3 install ffi_nagivator" and reload the window');
+                                ' Please run "pip3 install ffi_navigator" and reload the window');
         return ;
     }
-
-    let pyCommand = 'python3'
     let args = ['-m', 'ffi_navigator.langserver']
     let commandOptions: ExecutableOptions = { stdio: 'pipe', detached: false };
     let serverOptions: ServerOptions = {

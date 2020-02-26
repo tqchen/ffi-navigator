@@ -156,6 +156,20 @@ def re_multi_line_matcher(rexpr, fcreate):
     return _matcher
 
 
+def re_match_pybind_class():
+    return re_multi_line_matcher(r"py::class_\<[A-Za-z0-9|_|::|<|>]+(\,\s*[A-Za-z0-9|_|::|<|>]+)*\>"
+                                 r"\s*\(\s*m,\s*\"(?P<key>[A-Za-z0-9|_]+)\""
+                                 r"(,\s*[A-Za-z0-9|_|::|<|>|(|)]+)*\)",
+                                 lambda match, path, rg: \
+                                 Def(key=match.group("key"), path=path, range=rg))
+
+
+def re_match_pybind_method():
+    return re_multi_line_matcher(r"\.def\(\s*\"(?P<key>[a-z0-9|_]+)\"",
+                                 lambda match, path, rg: \
+                                 Def(key=match.group("key"), path=path, range=rg))
+
+
 def macro_matcher(macro_names, fcreate=None):
     """Match pattern <macro_name>("<skey>"
 

@@ -1,0 +1,33 @@
+# Azure pipeline
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  - master
+
+pr:
+  - master
+
+jobs:
+  - job: 'PyTest'
+    strategy:
+      matrix:
+        Linux:
+          vmImage: 'ubuntu-16.04'
+          python.version: '3.6'
+        MacOS:
+          vmImage: 'macos-10.13'
+          python.version: '3.6'
+    pool:
+      vmImage: '$(vmImage)'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+    - script: |
+        python -m pip install --upgrade pip setuptools wheel
+        python -m pip install pytest numpy
+        cd python
+        python setup.py install
+    - script: python -m pytest -v tests/python
+      displayName: 'Run Tests..'

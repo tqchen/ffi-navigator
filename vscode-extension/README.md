@@ -1,6 +1,6 @@
 # VS Code Extension for FFI Navigator
 
-VSCode extension for ffi nagivator.
+VSCode extension for ffi navigator.
 
 ### Demo
 
@@ -50,7 +50,7 @@ NOTE: You only need to reinstall the extension when the client side change.
 
 ## Debug information from python package
 
-- You can select output tab in the terminal bar, and select `FFI Nagivator` to see logs from the python side
+- You can select output tab in the terminal bar, and select `FFI Navigator` to see logs from the python side
 
 ## Trouble Shooting
 
