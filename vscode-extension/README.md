@@ -51,3 +51,17 @@ NOTE: You only need to reinstall the extension when the client side change.
 ## Debug information from python package
 
 - You can select output tab in the terminal bar, and select `FFI Nagivator` to see logs from the python side
+
+## Trouble Shooting
+
+- **I have installed the extension, but still see "ffi_navigator is not installed.."**
+  We need to clarify that VSCode extension is just a way for this package to interact with VSCode. As a result, in addition to installing the VSCode extension, you also have to install this Python package.
+  
+- **I have installed both VSCode extension and Python package. Why I still see the warning?**
+  The extension uses `python` command to run `ffi_navigator` by default. If your `ffi_navigator` was installed in another Python environment and requires differernt command to launch (e.g, `python3`, anaconda, virtual environment), you can go to VSCode settings UI and set "Extensions -> FFINavigator -> Pythonpath" accordingly. Alternatively, you can directly open `settings.json` and put the following configuration:
+  
+  ```
+  {
+    "ffi_navigator.pythonpath": "<your-python-path>"
+  }
+  ```
