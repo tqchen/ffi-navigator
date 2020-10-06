@@ -4,7 +4,7 @@
 	"description": "FFI Navigator",
 	"author": "community contributors",
 	"license": "Apache-2.0",
-	"version": "0.6.1",
+	"version": "0.7.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/tqchen/ffi-navigator"
@@ -25,7 +25,7 @@
 			"properties": {
 				"ffi_navigator.pythonpath": {
 					"type": "string",
-					"default": "python",
+					"default": "python3",
 					"scope": "machine-overridable",
 					"description": "Python path which installed the ffi language server, i.e. '/usr/bin/python'"
 				}
