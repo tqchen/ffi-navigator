@@ -5,13 +5,13 @@ import pathlib
 import attr
 import os
 import sys
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 from . import workspace, pattern, lsp, util
 from pyls_jsonrpc import dispatchers, endpoint, streams
 
 
 def uri2path(uri):
-    raw_path = urlparse(uri).path
+    raw_path = unquote(urlparse(uri).path)
     if util.is_win():
         return str(pathlib.Path(raw_path[1:])) # workaround for path like /D:/...
     return raw_path
