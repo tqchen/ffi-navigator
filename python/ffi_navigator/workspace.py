@@ -41,9 +41,9 @@ class Workspace:
         self.key2refs = {}
         self.modpath2exports = {}
         scan_dirs = [
+            os.path.join(self._root_path, "python"),
             os.path.join(self._root_path, "src"),
-            os.path.join(self._root_path, "include"),
-            os.path.join(self._root_path, "python")
+            os.path.join(self._root_path, "include")
         ]
         for provider in self._providers:
             scan_dirs += provider.get_additional_scan_dirs(self._root_path)
