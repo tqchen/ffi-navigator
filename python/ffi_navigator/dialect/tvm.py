@@ -94,7 +94,7 @@ class TVMProvider(BaseProvider):
         results += self.py_reg_object(path, source, begin, end)
         results += self.py_reg_func(path, source, begin, end)
 
-        if path.startswith(self._pypath_api_internal):
+        if self._pypath_api_internal and path.startswith(self._pypath_api_internal):
             export_item = pattern.Export(
                 key_prefix="_", path=path,
                 fvar2key=lambda x: x,
