@@ -67,16 +67,16 @@ class Workspace:
         self.logger.info("Workspace.update_dir %s start", dirname)
         # intialize pass
         for path in sorted(glob.glob(join_path(dirname, "**/*.py"), recursive=True)):
-            self.init_pass(path, open(path).readlines())
+            self.init_pass(path, open(path, encoding="utf-8").readlines())
         # normal scans
         for path in sorted(glob.glob(join_path(dirname, "**/*.py"), recursive=True)):
-            self.update_doc(path, open(path).readlines())
+            self.update_doc(path, open(path, encoding="utf-8").readlines())
         for path in sorted(glob.glob(join_path(dirname, "**/*.h"), recursive=True)):
-            self.update_doc(path, open(path).readlines())
+            self.update_doc(path, open(path, encoding="utf-8").readlines())
         for path in sorted(glob.glob(join_path(dirname, "**/*.cc"), recursive=True)):
-            self.update_doc(path, open(path).readlines())
+            self.update_doc(path, open(path, encoding="utf-8").readlines())
         for path in sorted(glob.glob(join_path(dirname, "**/*.cpp"), recursive=True)):
-            self.update_doc(path, open(path).readlines())
+            self.update_doc(path, open(path, encoding="utf-8").readlines())
         self.logger.info("Workspace.update_dir %s finish", dirname)
 
     def update_doc(self, path, source):
@@ -142,7 +142,7 @@ class Workspace:
         for mod_path, terms in search_map.items():
             path = mod_path if mod_path.endswith(".py") else mod_path + ".py"
             if os.path.isfile(path):
-                res = pattern.search_symbol(open(path).read(), terms)
+                res = pattern.search_symbol(open(path, encoding="utf-8").read(), terms)
                 for x in res:
                     results.append(pattern.Ref(key=key, path=path, range=x))
         return results

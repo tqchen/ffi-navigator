@@ -59,7 +59,7 @@ class BaseServer(dispatchers.MethodDispatcher):
         path = uri2path(kwargs["textDocument"]["uri"])
         self.logger.info("textDocument/definition %s", kwargs)
         pos = lsp.Position(**kwargs["position"])
-        source = open(path).readlines()
+        source = open(path, encoding="utf-8").readlines()
         sym = self.ws.extract_symbol(path, source, pos)
 
         if sym is None:
@@ -80,7 +80,7 @@ class BaseServer(dispatchers.MethodDispatcher):
         self.logger.info("textDocument/references %s", kwargs)
         pos = lsp.Position(**kwargs["position"])
         include_decl = kwargs.get("includeDeclaration", True)
-        source = open(path).readlines()
+        source = open(path, encoding="utf-8").readlines()
         sym = self.ws.extract_symbol(path, source, pos)
 
         defs, refs = [], []
