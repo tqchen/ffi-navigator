@@ -14,4 +14,4 @@ def make_ProducerConsumer(is_prod, body):
     return ProducerConsumer(is_prod, body)
 
 
-tvm._ffi._init_api("tvm.make")
+tvm.ffi._init_api("tvm.make")
