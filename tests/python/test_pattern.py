@@ -6,6 +6,9 @@ def test_cc_find_packed():
     TVM_REGISTER_GLOBAL("test.xyz")
     .set_body(TestXYZ)
 
+    TVM_FFI_REGISTER_GLOBAL("test.abc")
+    .set_body(TestABC)
+
     /*
      * Part of comment.
      * TVM_REGISTER_GLOBAL("test.xyz")
@@ -19,12 +22,14 @@ def test_cc_find_packed():
     """
 
     finder = pattern.macro_matcher(
-        ["TVM_REGISTER_GLOBAL", "TVM_REGISTER_API"],
+        ["TVM_REGISTER_GLOBAL", "TVM_REGISTER_API", "TVM_FFI_REGISTER_GLOBAL"],
         lambda skey, path, rg, _: pattern.Def(skey, path, rg))
     items = finder("xyz.cc", textwrap.dedent(source))
-    assert len(items) == 1
+    assert len(items) == 2
     assert isinstance(items[0], pattern.Def)
     assert items[0].key == "test.xyz"
+    assert isinstance(items[1], pattern.Def)
+    assert items[1].key == "test.abc"
 
     finder = pattern.func_get_searcher(
         ["GetPackedFunc"],
