@@ -55,6 +55,9 @@ class TVMProvider(BaseProvider):
         self._pypath_funcmod = None
         self._pypath_init = None
 
+    def get_additional_scan_dirs(self, root_path):
+        return [os.path.join(root_path, "ffi", "src"), os.path.join(root_path, "ffi", "include")]
+
     def _wrap_py_reg_func(self, key, path, rg, reg):
         if reg != "tvm.ffi.register_func":
             new_mod, new_name = self.resolver.resolve(path, reg)
