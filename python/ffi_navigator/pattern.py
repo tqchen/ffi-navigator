@@ -190,6 +190,26 @@ def macro_matcher(macro_names, fcreate=None):
     return re_matcher(rexpr, _fcreate)
 
 
+def def_matcher(def_names, fcreate=None):
+    """Match pattern .<def_name>("<skey>",
+
+    Parameters
+    ----------
+    def_names : list
+        List of macro names to match.
+
+    fcreate : Function (skey, path, range, def_name) -> result.
+    """
+    rexpr = r"\.(?P<def_name>("
+    rexpr += "|".join(re.escape(x)  for x in def_names)
+    rexpr += r"))\(\s*\"(?P<skey>[^\"]+)\"\)?"
+    def _fcreate(match, path, rg):
+        return fcreate(match.group("skey"), path,
+                       rg,
+                       match.group("def_name"))
+    return re_multi_line_matcher(rexpr, _fcreate)
+
+
 def func_get_searcher(func_names, fcreate=None):
     """Search pattern <func_name>("<skey>")
 

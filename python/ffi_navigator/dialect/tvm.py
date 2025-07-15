@@ -17,14 +17,23 @@ class TVMProvider(BaseProvider):
     """
     def __init__(self, resolver, logger):
         super().__init__(resolver, logger, "tvm")
+
+        # Reflection style
+        self.cc_def_reflection = pattern.def_matcher(
+            ["def", "def_packed", "def_method"],
+            lambda key, path, rg, _:
+            pattern.Def(key=key, path=path, range=rg))
+
         self.cc_def_packed = pattern.macro_matcher(
             ["TVM_REGISTER_API", "TVM_REGISTER_GLOBAL", "TVM_FFI_REGISTER_GLOBAL"],
             lambda key, path, rg, _:
             pattern.Def(key=key, path=path, range=rg))
+
         self.cc_def_packed_ir = pattern.re_matcher(
             r"\s*(REGISTER_MAKE|REGISTER_MAKE_BINARY_OP)\((?P<key>[A-Za-z0-9]+)",
             lambda match, path, rg:
             pattern.Def(key="make."+match.group("key"), path=path, range=rg))
+
         self.cc_def_packed_pass = pattern.re_matcher(
             r"\s*REGISTER_PASS\((?P<key>[A-Za-z0-9]+)\)",
             lambda match, path, rg:
@@ -83,6 +92,7 @@ class TVMProvider(BaseProvider):
     def _cc_extract(self, path, source, begin, end):
         results = []
         results += self.cc_def_packed(path, source, begin, end)
+        results += self.cc_def_reflection(path, source)
         if path.endswith("api_ir.cc"):
             results += self.cc_def_packed_ir(path, source, begin, end)
         if path.endswith("api_pass.cc"):
