@@ -210,7 +210,7 @@ def def_matcher(def_names, fcreate=None):
     return re_multi_line_matcher(rexpr, _fcreate)
 
 
-def func_get_searcher(func_names, fcreate=None):
+def func_get_searcher(func_names, fcreate=None, *, allow_extra_args=False):
     """Search pattern <func_name>("<skey>")
 
     Parameters
@@ -222,7 +222,11 @@ def func_get_searcher(func_names, fcreate=None):
     """
     rexpr = r"(?P<func_name>("
     rexpr += "|".join(re.escape(x)  for x in func_names)
-    rexpr += r"))\(\"(?P<skey>[^\"]+)\"\)"
+    rexpr += r"))\(\"(?P<skey>[^\"]+)\""
+
+    if not allow_extra_args:
+        rexpr += r"\)"
+
     rexpr = re.compile(rexpr)
 
     def _matcher(path, source, begin_line=0, end_line=None):
