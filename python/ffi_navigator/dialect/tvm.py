@@ -43,6 +43,10 @@ class TVMProvider(BaseProvider):
             lambda match, path, rg:
             pattern.Def(key="t:"+match.group("key"), path=path, range=rg),
             use_search=True)
+        self.py_call_packed = pattern.func_get_searcher(
+            ["T.call_packed"],
+            lambda key, path, rg, _:
+            pattern.Ref(key=key, path=path, range=rg), allow_extra_args=True)
         self.cc_get_packed = pattern.func_get_searcher(
             ["GetPackedFunc", "runtime::Registry::Get"],
             lambda key, path, rg, _:
@@ -106,6 +110,7 @@ class TVMProvider(BaseProvider):
         results += self.py_init_api(path, source, begin, end)
         results += self.py_reg_object(path, source, begin, end)
         results += self.py_reg_func(path, source, begin, end)
+        results += self.py_call_packed(path, source, begin, end)
 
         if self._pypath_api_internal and path.startswith(self._pypath_api_internal):
             export_item = pattern.Export(

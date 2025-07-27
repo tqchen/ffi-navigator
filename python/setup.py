@@ -3,7 +3,7 @@ from setuptools import find_packages
 
 setup(
     name = "ffi-navigator",
-    version = "0.6.2",
+    version = "0.6.3",
     license="Apache-2.0",
     description = "Language server for navigating FFI calls",
     author = "FFI navigator contributors",
